@@ -22,10 +22,10 @@ generation.
 
 | | |
 |---|---|
-| [**Castle Home.apk**](../../releases/latest) | The app, ready to install, on the Releases page. |
+| [**Castle-Home.apk**](../../releases/latest) | The app, ready to install, on the Releases page. |
 | [**GUIDE.md**](GUIDE.md) | The full guide: install, make it your home screen, customise it, troubleshooting, every prompt used to make the pictures, the full brief it was built from, and how to rebuild it. Also as a [PDF](docs/Castle%20Home%20-%20full%20prompt%20and%20guide.pdf). |
 | [**PROMPT.md**](PROMPT.md) | A prompt for a coding assistant that asks what you watch and where, sets Castle Home up for you, builds it and installs it on your TV. |
-| [**Castle Home - assets.zip**](../../releases/latest) | Every original picture and clip at full resolution, on the Releases page. |
+| [**Castle-Home-assets.zip**](../../releases/latest) | Every original picture and clip at full resolution, on the Releases page. |
 | `hogwarts/`, `hogwarts-tv/`, `build.sh` | The source: the page, its pictures and tools, and the Android TV app. |
 
 ## Make it yours
@@ -51,11 +51,11 @@ Install the APK from [Releases](../../releases/latest) with a USB stick and a fi
 
 ```bash
 adb connect YOUR-TV-IP:5555
-adb install "Castle Home.apk"
+adb install "Castle-Home.apk"
 ```
 
 It's signed with certificate SHA-256 `71ca03bf2509b6188e931f98d0dc5eade9d73f610cc4dfeca9b299de80a97022`; check it with
-`apksigner verify --print-certs "Castle Home.apk"`.
+`apksigner verify --print-certs "Castle-Home.apk"`.
 
 To make it the home screen on Android 10 or newer, `adb shell cmd role add-role-holder android.app.role.HOME app.tvhome.hogwarts 0`;
 on Android 7 to 9, `adb shell cmd package set-home-activity app.tvhome.hogwarts/.HomeAlias`. To switch back, run the same

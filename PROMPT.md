@@ -4,7 +4,7 @@ Paste the prompt below into a coding assistant that can run commands (Claude Cod
 as your TV. It asks you a few questions, sets Castle Home up for what you watch and where, builds it, installs it and checks
 it on the TV.
 
-Just want the app as it is? Install `Castle Home.apk` from [Releases](../../releases/latest) instead, and change the dock
+Just want the app as it is? Install `Castle-Home.apk` from [Releases](../../releases/latest) instead, and change the dock
 and the films on the TV with the gear at the top right ([GUIDE.md](GUIDE.md), sections 3 to 6).
 
 **Before you start, on the TV:** Settings → Device Preferences → About, press OK on **Build** seven times, then go back to

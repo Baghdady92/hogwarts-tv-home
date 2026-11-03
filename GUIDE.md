@@ -33,15 +33,15 @@ A fan-made project for personal use. Not affiliated with or endorsed by Warner B
 | `build.sh` | Builds the APK (and installs it with `./build.sh install`). |
 | `docs/` | Screenshots and the PDF guide. |
 
-On the [Releases](../../releases/latest) page: **Castle Home.apk** (ready to install) and **Castle Home - assets.zip**, every original picture and clip at full resolution (the 4K castle, shelf and greenhouses, the four greenhouse takes, both beast takes, the owl stills and clips with and without background, the posters, the logos in white and gold).
+On the [Releases](../../releases/latest) page: **Castle-Home.apk** (ready to install) and **Castle-Home-assets.zip**, every original picture and clip at full resolution (the 4K castle, shelf and greenhouses, the four greenhouse takes, both beast takes, the owl stills and clips with and without background, the posters, the logos in white and gold).
 
 ## 3. Install the APK
 
-Works on: Android TV and Google TV, Android 7 or newer, with Android System WebView kept up to date from the Play Store. Built and tested on a 1080p Android 10 TV. The file is **Castle Home.apk**.
+Works on: Android TV and Google TV, Android 7 or newer, with Android System WebView kept up to date from the Play Store. Built and tested on a 1080p Android 10 TV. The file is **Castle-Home.apk**.
 
 ### Option A: with a USB stick or the "Send files to TV" app (no computer commands)
 
-1. Copy **Castle Home.apk** to a USB stick, or send it to the TV with the **Send files to TV** app (phone and TV both need it).
+1. Copy **Castle-Home.apk** to a USB stick, or send it to the TV with the **Send files to TV** app (phone and TV both need it).
 
 1. On the TV, open a file manager, for example File Commander or X-plore from the Play Store.
 
@@ -61,7 +61,7 @@ Works on: Android TV and Google TV, Android 7 or newer, with Android System WebV
 
 ```bash
 adb connect YOUR-TV-IP:5555
-adb install "Castle Home.apk"
+adb install "Castle-Home.apk"
 ```
 
 Accept the "Allow USB debugging?" prompt on the TV the first time.
