@@ -1,8 +1,8 @@
-// Castle Home's settings: the apps on the dock and where the films open.
+// Hogwarts TV's settings: the apps on the dock and where the films open.
 // On the TV, the Customise panel (the gear at the top right, or Up from the dock) changes these and keeps its own copy;
 // this file is the starting point for a new install, and the one to edit before you build. PROMPT.md fills it in for you.
 window.CASTLE = {
-  // Open the Customise panel by itself the first time Castle Home starts, so someone who only installed the APK can
+  // Open the Customise panel by itself the first time Hogwarts TV starts, so someone who only installed the APK can
   // pick their own apps and service on the TV. Set it to false when this file is already set up for the TV (PROMPT.md
   // does): the panel then stays behind the gear until someone opens it.
   askOnFirstRun: true,

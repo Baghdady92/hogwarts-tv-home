@@ -1,4 +1,4 @@
-# Castle Home: the full guide
+# Hogwarts TV: the full guide
 
 Full prompt and guide. A home screen for Android TV built around a castle at night: the castle's windows flicker, mist drifts over the lake, and a snowy owl sits on the app you've selected and flies to the next one as you move. Scroll down to a candle-lit library where the eight Harry Potter films are leather-bound books that turn to face you, and down again to a moonlit greenhouse with one beast for each Fantastic Beasts film. This guide has the steps to install the finished APK and make it yours (your apps on the dock, your streaming service for the films), every prompt used to make the pictures, and the prompts to build it yourself with a coding assistant, starting from cleaning up the TV. If you'd rather have a coding assistant set it all up for you, use [`PROMPT.md`](PROMPT.md).
 
@@ -26,22 +26,22 @@ A fan-made project for personal use. Not affiliated with or endorsed by Warner B
 |---|---|
 | `README.md` | The short version: what it is, install, the remote. |
 | `GUIDE.md` | This guide. Also as a PDF in `docs/`. |
-| `PROMPT.md` | A prompt for a coding assistant that asks what you watch and where, sets Castle Home up for you, builds it and installs it on your TV. |
+| `PROMPT.md` | A prompt for a coding assistant that asks what you watch and where, sets Hogwarts TV up for you, builds it and installs it on your TV. |
 | `hogwarts/` | The home screen: one web page (`index.html`), its settings (`config.js`), the pictures (castle, shelf, greenhouse, window light, mist), the owl's sprite sheets and source clips, the book covers and the gold logos. |
 | `hogwarts/tools/` | The scripts that made the layers from the pictures, and the one that makes the TV copy (section 9). |
 | `hogwarts-tv/` | The Android TV app: a full-screen WebView around the page, with a small bridge to the TV. |
 | `build.sh` | Builds the APK (and installs it with `./build.sh install`). |
 | `docs/` | Screenshots and the PDF guide. |
 
-On the [Releases](../../releases/latest) page: **Castle-Home.apk** (ready to install) and **Castle-Home-assets.zip**, every original picture and clip at full resolution (the 4K castle, shelf and greenhouses, the four greenhouse takes, both beast takes, the owl stills and clips with and without background, the posters, the logos in white and gold).
+On the [Releases](../../releases/latest) page: **Hogwarts-TV.apk** (ready to install) and **Hogwarts-TV-assets.zip**, every original picture and clip at full resolution (the 4K castle, shelf and greenhouses, the four greenhouse takes, both beast takes, the owl stills and clips with and without background, the posters, the logos in white and gold).
 
 ## 3. Install the APK
 
-Works on: Android TV and Google TV, Android 7 or newer, with Android System WebView kept up to date from the Play Store. Built and tested on a 1080p Android 10 TV. The file is **Castle-Home.apk**.
+Works on: Android TV and Google TV, Android 7 or newer, with Android System WebView kept up to date from the Play Store. Built and tested on a 1080p Android 10 TV. The file is **Hogwarts-TV.apk**.
 
 ### Option A: with a USB stick or the "Send files to TV" app (no computer commands)
 
-1. Copy **Castle-Home.apk** to a USB stick, or send it to the TV with the **Send files to TV** app (phone and TV both need it).
+1. Copy **Hogwarts-TV.apk** to a USB stick, or send it to the TV with the **Send files to TV** app (phone and TV both need it).
 
 1. On the TV, open a file manager, for example File Commander or X-plore from the Play Store.
 
@@ -49,7 +49,7 @@ Works on: Android TV and Google TV, Android 7 or newer, with Android System WebV
 
 1. If Play Protect warns that the app isn't from the Play Store, choose **Install anyway**.
 
-1. **Castle Home** now appears in your apps. Open it from there anytime.
+1. **Hogwarts TV** now appears in your apps. Open it from there anytime.
 
 ### Option B: with adb from a computer
 
@@ -61,16 +61,16 @@ Works on: Android TV and Google TV, Android 7 or newer, with Android System WebV
 
 ```bash
 adb connect YOUR-TV-IP:5555
-adb install "Castle-Home.apk"
+adb install "Hogwarts-TV.apk"
 ```
 
 Accept the "Allow USB debugging?" prompt on the TV the first time.
 
 ## 4. Make it your home screen (optional)
 
-You can simply open Castle Home from your apps. To make the remote's Home button go to it:
+You can simply open Hogwarts TV from your apps. To make the remote's Home button go to it:
 
-- If the TV asks which home app to use after you press Home, pick **Castle Home**, then **Always**.
+- If the TV asks which home app to use after you press Home, pick **Hogwarts TV**, then **Always**.
 
 - Most Android TV and Google TV models never ask. Use adb (see Option B), as follows.
 
@@ -80,19 +80,19 @@ First note your current launcher, so you can switch back later:
 adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME
 ```
 
-Switch to Castle Home on Android 10 or newer:
+Switch to Hogwarts TV on Android 10 or newer:
 
 ```bash
 adb shell cmd role add-role-holder android.app.role.HOME app.tvhome.hogwarts 0
 ```
 
-Switch to Castle Home on Android 7 to 9:
+Switch to Hogwarts TV on Android 7 to 9:
 
 ```bash
 adb shell cmd package set-home-activity app.tvhome.hogwarts/.HomeAlias
 ```
 
-To switch back, run the same command with your old launcher's package name (from the first command), or simply uninstall Castle Home:
+To switch back, run the same command with your old launcher's package name (from the first command), or simply uninstall Hogwarts TV:
 
 ```bash
 adb uninstall app.tvhome.hogwarts
@@ -108,7 +108,7 @@ When you're done with adb, turn USB / Network debugging off again.
 
 - **OK:** open the selected app, or open the selected film. An HDMI input on the dock (a PlayStation, say) switches the TV to it.
 
-- **Back:** up one section, or out of the Customise panel. On the castle it closes the app (if Castle Home is your home screen, it does nothing).
+- **Back:** up one section, or out of the Customise panel. On the castle it closes the app (if Hogwarts TV is your home screen, it does nothing).
 
 - **Home:** back to the castle, from anywhere.
 
@@ -151,7 +151,7 @@ Three steps: clean up the TV, make the pictures, then build the home screen. (To
 
 ### Step 1: Clean up (debloat) the TV
 
-The easiest way is [cleanyourtv](https://github.com/Gathin23/cleanyourtv): paste its [`PROMPT.md`](https://github.com/Gathin23/cleanyourtv/blob/main/PROMPT.md) into a coding assistant and it does this safely for most Android TV and Google TV brands. Castle Home was built on a TV cleaned that way. The prompt below is the one used on that TV, if you'd rather do it by hand.
+The easiest way is [cleanyourtv](https://github.com/Gathin23/cleanyourtv): paste its [`PROMPT.md`](https://github.com/Gathin23/cleanyourtv/blob/main/PROMPT.md) into a coding assistant and it does this safely for most Android TV and Google TV brands. Hogwarts TV was built on a TV cleaned that way. The prompt below is the one used on that TV, if you'd rather do it by hand.
 
 Optional, and fully reversible: nothing is uninstalled, only switched off. The list at the end is what was disabled on the TV this was built on (a OnePlus TV); other brands have different packages, so the assistant will look at yours first.
 
@@ -259,14 +259,14 @@ Then run both clips through Higgsfield's video background remover (about 1 credi
 
 **The book covers:** the eight film posters from TMDB (themoviedb.org, the Harry Potter collection, w780 size), numbered 1 to 8 in film order. The build ages them to match the bookshelf photo.
 
-### Step 3: Build Castle Home
+### Step 3: Build Hogwarts TV
 
 Put the pictures in a folder first: castle.png, shelf.png, the greenhouse with beasts, covers 1–8.jpg, the owl still, the two owl clips and their background-removed versions. This is the complete brief, including every refinement and everything learned getting it smooth on a TV. It's the brief for the first version, with its fixed dock and JioHotstar links; this repository has since moved those into settings (the Customise panel and `config.js`, section 6), so to make your own variation, start from this repository rather than from scratch.
 
 ━━━━━━━━━━ PROMPT START ━━━━━━━━━━
 
 ```text
-Build me a home screen for my Android TV themed on a wizarding castle at night, called Castle Home. Build it first as an HTML prototype I can preview in Chrome, then package that same page as its own Android TV app (a full-screen WebView loading the page from the APK), so my current launcher is never touched. Design everything on a 1920×1080 stage and scale it to the screen.
+Build me a home screen for my Android TV themed on a wizarding castle at night, called Hogwarts TV. Build it first as an HTML prototype I can preview in Chrome, then package that same page as its own Android TV app (a full-screen WebView loading the page from the APK), so my current launcher is never touched. Design everything on a 1920×1080 stage and scale it to the screen.
 
 THE PICTURES (in my folder): castle.png (the castle at night), shelf.png (a bookcase whose middle shelf is empty), greenhouse_beasts.png (a greenhouse with three creatures), covers 1–8.jpg (the Harry Potter film posters), the owl still, owl idle and hop clips, and the same clips with the background removed (owl on pure black). Prepare lighter copies (about 2560 px wide for the browser, 1936 px for the TV) and keep the originals.
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build Castle Home: copy a TV-sized copy of the page into the app (hogwarts/tools/tv_assets.py), then build the APK.
+# Build Hogwarts TV: copy a TV-sized copy of the page into the app (hogwarts/tools/tv_assets.py), then build the APK.
 #   ./build.sh            the release APK (signed with your key in hogwarts-tv/release/, or else your debug key)
 #   ./build.sh install    and install it on the TV adb is connected to
 set -e

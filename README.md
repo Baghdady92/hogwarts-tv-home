@@ -1,4 +1,4 @@
-# Castle Home
+# Hogwarts TV
 
 A wizarding-castle home screen for Android TV and Google TV, built as its own app. A castle at night across a lake: its
 windows flicker like candlelight, mist drifts over the water, the stars twinkle and the lake glints. A snowy owl perches on
@@ -22,10 +22,10 @@ generation.
 
 | | |
 |---|---|
-| [**Castle-Home.apk**](../../releases/latest) | The app, ready to install, on the Releases page. |
-| [**GUIDE.md**](GUIDE.md) | The full guide: install, make it your home screen, customise it, troubleshooting, every prompt used to make the pictures, the full brief it was built from, and how to rebuild it. Also as a [PDF](docs/Castle%20Home%20-%20full%20prompt%20and%20guide.pdf). |
-| [**PROMPT.md**](PROMPT.md) | A prompt for a coding assistant that asks what you watch and where, sets Castle Home up for you, builds it and installs it on your TV. |
-| [**Castle-Home-assets.zip**](../../releases/latest) | Every original picture and clip at full resolution, on the Releases page. |
+| [**Hogwarts-TV.apk**](../../releases/latest) | The app, ready to install, on the Releases page. |
+| [**GUIDE.md**](GUIDE.md) | The full guide: install, make it your home screen, customise it, troubleshooting, every prompt used to make the pictures, the full brief it was built from, and how to rebuild it. Also as a [PDF](docs/Hogwarts%20TV%20-%20full%20prompt%20and%20guide.pdf). |
+| [**PROMPT.md**](PROMPT.md) | A prompt for a coding assistant that asks what you watch and where, sets Hogwarts TV up for you, builds it and installs it on your TV. |
+| [**Hogwarts-TV-assets.zip**](../../releases/latest) | Every original picture and clip at full resolution, on the Releases page. |
 | `hogwarts/`, `hogwarts-tv/`, `build.sh` | The source: the page, its pictures and tools, and the Android TV app. |
 
 ## Make it yours
@@ -42,7 +42,7 @@ To send the films straight into another service, add its links to `hogwarts/conf
 
 ## Install
 
-Castle Home needs Android 7 or newer with Android System WebView up to date. Cleaning up the TV first with
+Hogwarts TV needs Android 7 or newer with Android System WebView up to date. Cleaning up the TV first with
 [cleanyourtv](https://github.com/Gathin23/cleanyourtv) is optional but worth it: its
 [`PROMPT.md`](https://github.com/Gathin23/cleanyourtv/blob/main/PROMPT.md) switches off the ads and the stock launcher's
 feeds, and everything it does can be undone.
@@ -51,15 +51,15 @@ Install the APK from [Releases](../../releases/latest) with a USB stick and a fi
 
 ```bash
 adb connect YOUR-TV-IP:5555
-adb install "Castle-Home.apk"
+adb install "Hogwarts-TV.apk"
 ```
 
 It's signed with certificate SHA-256 `71ca03bf2509b6188e931f98d0dc5eade9d73f610cc4dfeca9b299de80a97022`; check it with
-`apksigner verify --print-certs "Castle-Home.apk"`.
+`apksigner verify --print-certs "Hogwarts-TV.apk"`.
 
 To make it the home screen on Android 10 or newer, `adb shell cmd role add-role-holder android.app.role.HOME app.tvhome.hogwarts 0`;
 on Android 7 to 9, `adb shell cmd package set-home-activity app.tvhome.hogwarts/.HomeAlias`. To switch back, run the same
-command with your old launcher's package, or uninstall Castle Home. More ways, and the details, in [GUIDE.md](GUIDE.md).
+command with your old launcher's package, or uninstall Hogwarts TV. More ways, and the details, in [GUIDE.md](GUIDE.md).
 
 ## The remote
 
