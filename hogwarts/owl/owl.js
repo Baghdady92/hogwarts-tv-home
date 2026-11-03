@@ -1,0 +1,1 @@
+window.OWL_SHEETS = {"idle": {"src": "owl/idle.webp", "n": 61, "cols": 34, "cw": 116, "ch": 169, "fps": 12, "footX": 65.4, "footY": 163.8}, "hop": {"src": "owl/hop.webp", "n": 85, "cols": 9, "cw": 440, "ch": 405, "fps": 24, "footX": 138.8, "footY": 398.6}};

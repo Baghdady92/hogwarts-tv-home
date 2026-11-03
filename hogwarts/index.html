@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Castle Home</title>
+<style>
+  :root { --gold: #d9b45f; --gold-hi: #f3dc9a; --ink: #f4ead6; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *:focus, *:focus-visible { outline: none !important; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; font-family: "Cochin", "Baskerville", "Hoefler Text", Georgia, serif; }
+
+  /* a 1920 x 1080 stage (the TV), scaled to whatever window it's in */
+  #stage { position: relative; width: 1920px; height: 1080px; flex: none; overflow: hidden; transform-origin: 50% 50%; background: #000; }
+  section { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; will-change: transform; }
+  .abs { position: absolute; }
+  /* both photos are 2752 x 1536: covering the 1920 x 1080 screen makes them 1935 wide, 7.5 px past each side */
+  .photoBox { position: absolute; left: -7.5px; top: 0; width: 1935px; height: 1080px; }
+  .photoBox > img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; }
+
+  /* ================================================================ HOME: the castle */
+  #cam { position: absolute; inset: 0; transform-origin: 1153px 454px; will-change: transform; }
+  #winA, #winB { position: absolute; display: block; mix-blend-mode: screen; opacity: .4; }   /* placed by WIN_CROP (img/layers.js) */
+  #sky { position: absolute; left: 0; top: 0; width: 1935px; height: 250px; }        /* stars and the odd shooting star */
+  #water { position: absolute; left: 560px; top: 800px; width: 1120px; height: 280px; } /* glints on the lake */
+  #moonglow { position: absolute; left: 427px; top: 52px; width: 500px; height: 500px; border-radius: 50%; mix-blend-mode: screen; pointer-events: none;
+              background: radial-gradient(circle, rgba(200,225,255,.30) 0%, rgba(170,200,240,.12) 22%, rgba(150,180,230,0) 62%); }
+  .drift { position: absolute; left: 0; overflow: hidden; pointer-events: none; }
+  .drift .strip { position: absolute; left: 0; top: 0; height: 100%; background-repeat: repeat-x; will-change: transform; }
+  #cloud1 { top: 0; width: 1935px; height: 430px; opacity: .16; }
+  #cloud1 .strip { width: 4778px; background: url(img/mist.png) 0 0 / 2389px 100%; animation: slideL 420s linear infinite; }
+  #mist1 { top: 612px; width: 1935px; height: 300px; opacity: .62; }
+  #mist1 .strip { width: 5121px; background: url(img/mist.png) 0 0 / 1707px 100%; animation: slideL3 150s linear infinite; }   /* three tiles: it moves by one, and two must still cover the 1935 px photo */
+  #mist2 { top: 560px; width: 1935px; height: 420px; opacity: .34; }
+  #mist2 .strip { width: 4778px; background: url(img/mist.png) 0 0 / 2389px 100%; animation: slideR 230s linear infinite; transform: translateX(-2389px); }
+  @keyframes slideL { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes slideR { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+  @keyframes slideL3 { from { transform: translateX(0); } to { transform: translateX(-1707px); } }
+
+  /* the default home screen's bottom shade, so the white logos read over the lake */
+  #hshade { position: absolute; inset: 0; pointer-events: none;
+            background: linear-gradient(180deg, rgba(0,0,0,.30) 0%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 52%, rgba(0,0,0,.30) 66%, rgba(0,0,0,.62) 80%, rgba(0,0,0,.80) 100%),
+                        radial-gradient(ellipse 80% 70% at 55% 45%, rgba(0,0,0,0) 60%, rgba(0,0,0,.45) 100%); }
+  #clock { position: absolute; left: 112px; top: 58px; color: var(--ink); text-shadow: 0 2px 18px rgba(0,0,0,.6); }
+  #clock .t { font-size: 92px; line-height: 1; letter-spacing: .01em; }
+  #clock .d { margin-top: 12px; font-size: 21px; letter-spacing: .28em; text-transform: uppercase; opacity: .72; padding-left: 4px; }
+  #topIcons { position: absolute; right: 112px; top: 92px; display: flex; gap: 56px; opacity: .78; }
+  #topIcons svg { width: 40px; height: 40px; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,.6)); transition: transform .2s; }
+  #topIcons svg.focus { stroke: #f3dc9a; transform: scale(1.3); filter: drop-shadow(0 0 10px rgba(255,190,120,.8)); }
+  #topIcons.focus { opacity: 1; }
+  #gearTip { position: absolute; right: -18px; top: 62px; font-size: 20px; letter-spacing: .24em; text-transform: uppercase; color: #f3dc9a;
+             opacity: 0; transition: opacity .2s; white-space: nowrap; text-shadow: 0 2px 10px rgba(0,0,0,.8); }
+  #topIcons.focus #gearTip { opacity: 1; }
+
+  #glow { position: absolute; left: 0; top: 700px; width: 900px; height: 340px; margin-left: -450px; pointer-events: none; mix-blend-mode: screen;
+          background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,186,96,.22), rgba(255,160,70,.06) 55%, rgba(255,150,60,0) 100%); }
+  #dock { position: absolute; left: 84px; top: 768px; width: 1752px; height: 170px; display: flex; }
+  .cell { position: relative; flex: 1; height: 170px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .cell .logo { will-change: transform; filter: drop-shadow(0 4px 14px rgba(0,0,0,.55)); transition: filter .3s; }
+  .cell.on .logo { filter: drop-shadow(0 4px 14px rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(255,176,96,.45)); }
+  .cell .logo img { display: block; }
+  .cell.word .logo span { display: block; line-height: 1; color: #f0c29c; letter-spacing: .03em; white-space: nowrap;
+                          text-shadow: 0 2px 14px rgba(0,0,0,.6), 0 0 22px rgba(255,170,90,.25); }
+  .cell.word .name { display: none; }
+
+  /* the Customise panel */
+  #custom { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; background: radial-gradient(ellipse at 50% 25%, #111a26, #05070b 72%);
+             display: none; color: var(--ink); z-index: 50; }
+  #custom.open { display: block; }
+  #custom .box { position: absolute; left: 150px; width: 1620px; top: 64px; bottom: 56px; }
+  #custom .h { font-size: 56px; color: var(--gold-hi); }
+  #custom .sub { font-size: 24px; opacity: .7; margin-top: 10px; letter-spacing: .02em; }
+  #custom .lab { margin-top: 32px; font-size: 20px; letter-spacing: .3em; text-transform: uppercase; color: #f0c29c; opacity: .85; }
+  #custom .grid { margin-top: 16px; height: 460px; overflow: hidden; padding: 2px 6px; margin-left: -6px; }
+  #custom .rows { display: grid; grid-template-columns: repeat(6, 254px); gap: 18px; transition: transform .25s; }
+  #custom .tile { position: relative; height: 140px; border-radius: 14px; background: rgba(255,255,255,.05); border: 2px solid rgba(240,194,156,.14);
+                  overflow: hidden; transition: transform .15s, box-shadow .15s; }
+  #custom .tile img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; opacity: .8; }
+  #custom .tile img.icon { left: 50%; top: 18px; width: 64px; height: 64px; margin-left: -32px; object-fit: contain; opacity: 1; }
+  #custom .tile .t { position: absolute; left: 14px; right: 14px; bottom: 10px; font-size: 21px; white-space: nowrap; overflow: hidden;
+                     text-overflow: ellipsis; text-shadow: 0 1px 6px #000, 0 0 12px #000; }
+  #custom .tile.banner .t { left: 0; right: 0; bottom: 0; padding: 22px 14px 8px; font-size: 18px; background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.8)); }
+  #custom .tile .n { position: absolute; right: 10px; top: 9px; width: 34px; height: 34px; border-radius: 50%; background: #f0c29c; color: #1a1209;
+                     font: 600 19px/34px Georgia, serif; text-align: center; display: none; }
+  #custom .tile.sel { border-color: #f0c29c; background: rgba(240,194,156,.12); }
+  #custom .tile.sel .n { display: block; }
+  #custom .films { margin-top: 16px; display: flex; gap: 18px; flex-wrap: wrap; }
+  #custom .pill, #custom .btn { padding: 14px 28px; border-radius: 40px; border: 2px solid rgba(240,194,156,.28); font-size: 24px; transition: transform .15s, box-shadow .15s; }
+  #custom .pill.sel { background: #f0c29c; color: #1a1209; border-color: #f0c29c; }
+  #custom .pill i { font-style: normal; opacity: .6; }
+  #custom .btns { position: absolute; left: 0; bottom: 0; display: flex; gap: 22px; }
+  #custom .btn { font-size: 26px; padding: 16px 44px; border-color: rgba(240,194,156,.45); }
+  #custom .foc { box-shadow: 0 0 0 4px #f3dc9a, 0 0 30px rgba(243,220,154,.4); transform: scale(1.04); }
+  #custom .note { position: absolute; right: 0; bottom: 18px; font-size: 22px; opacity: .75; color: #f0c29c; }
+  .cell .name { position: absolute; left: 0; right: 0; top: 178px; text-align: center; color: #f6d9bb; font-size: 30px; letter-spacing: .06em;
+                opacity: 0; transform: translateY(6px); transition: opacity .12s, transform .12s; text-shadow: 0 2px 10px rgba(0,0,0,.8); white-space: nowrap; }
+  .cell.on .name { opacity: .95; transform: none; transition: opacity .22s, transform .22s; }
+  #dsp { position: absolute; left: 0; top: 520px; width: 1920px; height: 560px; pointer-events: none; }   /* sparkles round the dock */
+  .owl { position: absolute; left: 0; top: 0; pointer-events: none; will-change: transform; }
+
+  .peek { position: absolute; left: 50%; transform: translateX(-50%); color: var(--ink); font-size: 16px; letter-spacing: .34em; text-transform: uppercase;
+          opacity: .42; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; text-shadow: 0 1px 6px rgba(0,0,0,.8); }
+  .peek svg { width: 22px; height: 12px; }
+  #toLib { bottom: 18px; animation: nudge 2.6s ease-in-out infinite; will-change: transform; }
+  @keyframes nudge { 0%, 100% { transform: translateX(-50%); } 50% { transform: translateX(-50%) translateY(5px); } }
+
+  /* ================================================================ LIBRARY: the books on the photo's empty shelf */
+  #lcam { position: absolute; inset: 0; transform-origin: 978px 540px; will-change: transform; }
+  .glowball { position: absolute; border-radius: 50%; pointer-events: none; mix-blend-mode: screen; }
+  #booklight { position: absolute; left: 0; top: 300px; width: 760px; height: 520px; margin-left: -380px; pointer-events: none; mix-blend-mode: screen;
+               background: radial-gradient(ellipse 50% 50% at 50% 55%, rgba(255,176,96,.20), rgba(255,150,70,0) 70%); }
+  #shelf3d { position: absolute; inset: 0; z-index: 4; perspective: 1400px; perspective-origin: 978px 470px; pointer-events: none; }
+  #row { position: absolute; left: 978px; top: 0; width: 0; height: 100%; transform-style: preserve-3d; }
+  .book { position: absolute; left: 0; top: 386px; transform-style: preserve-3d; cursor: pointer; pointer-events: auto; }
+  .face { position: absolute; backface-visibility: hidden; overflow: hidden; }
+  .face .shade { position: absolute; inset: 0; background: #0b0603; opacity: 0; pointer-events: none; }
+  .front { border-radius: 1px 4px 4px 1px; }
+  .front img { width: 100%; height: 100%; object-fit: cover; display: block; }   /* covers/aged: graded, hazed and worn by tools/age_covers.py */
+    .spine { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 22px 0 18px; }
+  .spine .bands { position: absolute; left: 0; right: 0; height: 7px; border-top: 1.5px solid rgba(214,176,92,.8); border-bottom: 1.5px solid rgba(214,176,92,.8); }
+  .spine .roman { color: #e8c97e; font-size: 15px; letter-spacing: .1em; margin-top: 22px; text-shadow: 0 1px 0 rgba(0,0,0,.6); }
+  .spine .stitle { writing-mode: vertical-rl; color: #e8c97e; font-size: 17px; letter-spacing: .07em; white-space: nowrap;
+                   text-shadow: 0 1px 0 rgba(0,0,0,.6); flex: 1; display: flex; align-items: center; }
+  .spine .star { width: 15px; height: 15px; margin-bottom: 22px; }
+  .pages { background: repeating-linear-gradient(90deg, #b9a47c 0 2px, #9c8762 2px 3px, #c2ae86 3px 5px); }
+  .pagesV { background: repeating-linear-gradient(0deg, #b9a47c 0 2px, #9c8762 2px 3px, #c2ae86 3px 5px); }
+  .leather::before { content: ""; position: absolute; inset: 0; opacity: .55; mix-blend-mode: overlay; pointer-events: none;
+                     background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.22), transparent 55%),
+                                 repeating-radial-gradient(circle at 40% 60%, rgba(0,0,0,.12) 0 1px, transparent 1px 3px); }
+  .inside { background: linear-gradient(90deg, #d8c9a4, #f1e6cb 12%, #f6edd7); display: none; flex-direction: column; align-items: center;
+            justify-content: center; text-align: center; color: #4a3218; padding: 26px; gap: 10px; }
+  .inside .t { font-size: 21px; line-height: 1.15; }
+  .inside .s { font-size: 11px; letter-spacing: .25em; text-transform: uppercase; opacity: .7; }
+  .sheen { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+           background: linear-gradient(115deg, rgba(255,240,200,0) 38%, rgba(255,240,200,.34) 50%, rgba(255,240,200,0) 62%);
+           background-size: 320% 100%; background-position: 120% 0; }
+  #cshadow { position: absolute; z-index: 3; left: 0; top: 668px; width: 280px; height: 34px; margin-left: -140px; border-radius: 50%; pointer-events: none;
+             background: radial-gradient(ellipse, rgba(0,0,0,.75), rgba(0,0,0,0) 70%); opacity: 0; }
+  #rowshade { position: absolute; z-index: 3; left: 978px; top: 370px; width: 900px; height: 330px; margin-left: -450px; pointer-events: none;
+              background: radial-gradient(ellipse 50% 50% at 50% 60%, rgba(0,0,0,.35), rgba(0,0,0,0) 75%); }
+  /* a brass plaque on the shelf's front edge, under the chosen film */
+  #plate { position: absolute; z-index: 3; left: 0; top: 695px; transform: translateX(978px) translateX(-50%); height: 36px; min-width: 400px; padding: 0 40px;
+           border-radius: 3px; display: flex; align-items: center; justify-content: center;
+           background: linear-gradient(180deg, #d6b672 0%, #a9833f 42%, #6e5022 100%);
+           box-shadow: inset 0 1px 0 rgba(255,250,220,.7), inset 0 -2px 3px rgba(70,44,10,.5), 0 3px 6px rgba(0,0,0,.65); }
+  #plate::before, #plate::after { content: ""; position: absolute; top: 13px; width: 9px; height: 9px; border-radius: 50%;
+           background: radial-gradient(circle at 35% 35%, #fff2c0, #7a5520 70%); box-shadow: 0 1px 1px rgba(0,0,0,.5); }
+  #plate::before { left: 14px; } #plate::after { right: 14px; }
+  #plate span { font-size: 19px; letter-spacing: .16em; text-transform: uppercase; color: #36230c; text-shadow: 0 1px 0 rgba(255,240,200,.55);
+                transition: opacity .22s; white-space: nowrap; }
+  #dust { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; z-index: 5; }
+  #seam { position: absolute; left: 0; right: 0; top: 0; height: 260px; z-index: 7; pointer-events: none; background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.6) 40%, rgba(0,0,0,0)); }
+  #lvig { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: radial-gradient(ellipse 80% 75% at 51% 50%, rgba(0,0,0,0) 58%, rgba(0,0,0,.5) 100%); }
+  #toHome { top: 16px; flex-direction: column-reverse; z-index: 6; }
+  #hint { position: absolute; z-index: 6; left: 50%; transform: translateX(-50%); bottom: 14px; color: rgba(244,234,214,.42); font-size: 15px;
+          letter-spacing: .24em; text-transform: uppercase; white-space: nowrap; text-shadow: 0 1px 6px #000; }
+
+  #toGarden { left: auto; right: 64px; bottom: 14px; transform: none; z-index: 6; }
+
+  /* ================================================================ GREENHOUSE: the Fantastic Beasts films */
+  #gcam { position: absolute; inset: 0; transform-origin: 960px 600px; will-change: transform; }
+  #gmist { top: 700px; width: 1935px; height: 300px; opacity: .38; }
+  #gmist .strip { width: 5121px; background: url(img/mist.png) 0 0 / 1707px 100%; animation: slideL3 190s linear infinite; }
+  #gfx { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
+  /* the lantern-light reveal: everything but the chosen spot sinks into the dark (drawn on a canvas, only when it moves) */
+  #gshade { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; pointer-events: none; }
+  #gcap { position: absolute; left: 0; right: 0; bottom: 74px; text-align: center; color: var(--gold-hi); transition: opacity .25s, transform .35s; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
+  #gcap .k { font-size: 18px; letter-spacing: .34em; text-transform: uppercase; color: rgba(244,234,214,.66); margin-bottom: 10px; }
+  #gcap .t { font-size: 52px; letter-spacing: .02em; }
+  #gcap.out { opacity: 0; transform: translateY(8px); }
+  #gseam { position: absolute; left: 0; right: 0; top: 0; height: 260px; z-index: 7; pointer-events: none; background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.6) 40%, rgba(0,0,0,0)); }
+  #gvig { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0) 20%, rgba(0,0,0,0) 70%, rgba(0,0,0,.55)); }
+  #toLib2 { top: 16px; flex-direction: column-reverse; z-index: 6; }
+  #ghint { position: absolute; z-index: 6; left: 50%; transform: translateX(-50%); bottom: 22px; color: rgba(244,234,214,.42); font-size: 15px;
+           letter-spacing: .24em; text-transform: uppercase; white-space: nowrap; text-shadow: 0 1px 6px #000; }
+
+  /* things that change every frame, each on its own layer: otherwise changing them re-renders the photo underneath */
+  #winA, #winB, #moonglow, #glow, .glowball, #booklight, #cshadow, #plate { will-change: opacity, transform; }
+
+  /* ---- the TV (window.TV or ?tv): its GPU can't afford blend modes, filters on moving layers, or extra full-screen layers.
+     Glows use plain transparency, the faintest mist layers go, and the static shading is baked into the TV's pictures. */
+  body.tv #winA, body.tv #winB, body.tv #moonglow, body.tv #glow, body.tv .glowball, body.tv #booklight, body.tv .sheen { mix-blend-mode: normal; }
+  body.tv .cell .logo, body.tv .cell.on .logo { filter: none; transition: none; }
+  body.tv .drift .strip, body.tv #toLib { animation: none; }   /* moved in the frame loop instead, see home() and garden() */
+  body.tv #cloud1, body.tv #mist2, body.tv #winB, body.tv .leather::before, body.tv #hshade, body.tv #lvig, body.tv #gvig { display: none; }
+
+  #opening { position: absolute; z-index: 20; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 18px;
+             background: #000; color: var(--gold-hi); opacity: 0; pointer-events: none; transition: opacity .6s; text-align: center; }
+  #opening .t { font-size: 54px; } #opening .s { font-size: 22px; letter-spacing: .3em; text-transform: uppercase; color: rgba(233,220,192,.6); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ============================================================ HOME -->
+  <section id="home">
+    <div id="cam">
+      <div class="photoBox">
+        <img src="img/castle.jpg" alt="">
+        <div class="drift" id="cloud1"><div class="strip"></div></div>
+        <div id="moonglow"></div>
+        <img id="winA" src="img/windows_a_crop.png" alt="">
+        <img id="winB" src="img/windows_b_crop.png" alt="">
+        <canvas id="sky" width="1935" height="250"></canvas>
+        <canvas id="water" width="1120" height="280"></canvas>
+        <div class="drift" id="mist2"><div class="strip"></div></div>
+        <div class="drift" id="mist1"><div class="strip"></div></div>
+      </div>
+    </div>
+    <div id="hshade"></div>
+    <div id="clock"><div class="t"></div><div class="d"></div></div>
+    <div id="topIcons"><div id="gearTip">Customise</div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f4ead6" stroke-width="1.6" stroke-linecap="round"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 15.8a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19" r="1" fill="#f4ead6"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f4ead6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5M3 12h11M10 8l4 4-4 4"/></svg>
+      <svg id="gear" viewBox="0 0 24 24" fill="none" stroke="#f4ead6" stroke-width="1.6" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.8l1.6 2.2 2.7-.6.6 2.7 2.4 1.3-1 2.6 1 2.6-2.4 1.3-.6 2.7-2.7-.6L12 21.2l-1.6-2.2-2.7.6-.6-2.7-2.4-1.3 1-2.6-1-2.6 2.4-1.3.6-2.7 2.7.6z"/></svg>
+    </div>
+    <div id="glow"></div>
+    <div id="dock"></div>
+    <canvas id="dsp" width="1920" height="560"></canvas>
+    <canvas class="owl" id="owlIdle"></canvas><canvas class="owl" id="owlHop" style="visibility:hidden"></canvas>
+    <div class="peek" id="toLib">The Library<svg viewBox="0 0 22 12" fill="none" stroke="#f4ead6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg></div>
+  </section>
+
+  <!-- ============================================================ LIBRARY -->
+  <section id="library">
+    <div id="lcam">
+      <div class="photoBox"><img src="img/shelf.jpg" alt=""></div>
+      <!-- the photo's own lights, breathing: the candle up top, the potions down below -->
+      <div class="glowball" id="candle" style="left:430px;top:-150px;width:500px;height:500px;background:radial-gradient(circle, rgba(255,196,110,.34), rgba(255,160,70,.10) 35%, rgba(255,150,60,0) 68%)"></div>
+      <div class="glowball" id="potG" style="left:336px;top:897px;width:140px;height:140px;background:radial-gradient(circle, rgba(80,240,140,.32), rgba(80,240,140,0) 65%)"></div>
+      <div class="glowball" id="potP" style="left:447px;top:938px;width:120px;height:120px;background:radial-gradient(circle, rgba(180,110,255,.30), rgba(180,110,255,0) 65%)"></div>
+      <div class="glowball" id="potA" style="left:575px;top:930px;width:110px;height:110px;background:radial-gradient(circle, rgba(255,170,70,.36), rgba(255,170,70,0) 65%)"></div>
+      <div id="booklight"></div>
+      <div id="rowshade"></div>
+      <div id="cshadow"></div>
+      <div id="plate"><span></span></div>
+      <div id="shelf3d"><div id="row"></div></div>
+      <canvas id="dust" width="960" height="540"></canvas>
+    </div>
+    <div id="lvig"></div>
+    <div id="seam"></div>
+    <div class="peek" id="toHome">Home<svg viewBox="0 0 22 12" fill="none" stroke="#f4ead6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10l9-8 9 8"/></svg></div>
+    <div id="hint">← → browse &nbsp;·&nbsp; OK watch on JioHotstar</div>
+    <div class="peek" id="toGarden">The Greenhouse<svg viewBox="0 0 22 12" fill="none" stroke="#f4ead6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2l9 8 9-8"/></svg></div>
+  </section>
+
+  <!-- ============================================================ GREENHOUSE -->
+  <section id="garden">
+    <div id="gcam">
+      <div class="photoBox"><img src="img/greenhouse_beasts.jpg" alt=""></div>
+      <!-- the photo's own lights, alive: three lanterns and the teal seed pods -->
+      <div class="glowball lantern" style="left:203px;top:212px;width:240px;height:240px;background:radial-gradient(circle, rgba(255,190,110,.42), rgba(255,160,70,0) 65%)"></div>
+      <div class="glowball lantern" style="left:725px;top:323px;width:200px;height:200px;background:radial-gradient(circle, rgba(255,190,110,.40), rgba(255,160,70,0) 65%)"></div>
+      <div class="glowball lantern" style="left:1482px;top:212px;width:240px;height:240px;background:radial-gradient(circle, rgba(255,190,110,.42), rgba(255,160,70,0) 65%)"></div>
+      <div class="glowball" id="pods" style="left:1105px;top:190px;width:330px;height:330px;background:radial-gradient(circle, rgba(70,240,220,.26), rgba(70,240,220,0) 62%)"></div>
+      <div class="drift" id="gmist"><div class="strip"></div></div>
+      <canvas id="gfx" width="960" height="540"></canvas>
+    </div>
+    <canvas id="gshade" width="480" height="270"></canvas>
+    <div id="gvig"></div>
+    <div id="gcap"><div class="k"></div><div class="t"></div></div>
+    <div class="peek" id="toLib2">The Library<svg viewBox="0 0 22 12" fill="none" stroke="#f4ead6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10l9-8 9 8"/></svg></div>
+    <div id="ghint">← → explore &nbsp;·&nbsp; OK watch on JioHotstar</div>
+    <div id="gseam"></div>
+  </section>
+
+  <div id="opening"><div class="t"></div><div class="s"></div></div>
+
+  <!-- ============================================================ CUSTOMISE (the gear, top right) -->
+  <div id="custom"><div class="box">
+    <div class="h">Customise your castle</div>
+    <div class="sub">Pick up to six apps for the dock, in the order you want them, then where the films open.</div>
+    <div class="lab">The dock</div>
+    <div class="grid"><div class="rows"></div></div>
+    <div class="lab">The films open in</div>
+    <div class="films"></div>
+    <div class="btns"><div class="btn" data-a="done">Done</div><div class="btn" data-a="reset">Start again</div></div>
+    <div class="note"></div>
+  </div></div>
+</div>
+
+<script src="config.js"></script>
+<script src="img/points.js"></script>
+<script src="img/layers.js"></script>
+<script src="owl/owl.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const ease = x => x * x * (3 - 2 * x);
+// a spring: k = stiffness, z = damping ratio (1 = no overshoot, lower = a little wobble)
+const spring = (x, k, z) => ({ x, v: 0, k, z });
+function step(s, target, dt) { s.v += (-s.k * (s.x - target) - 2 * s.z * Math.sqrt(s.k) * s.v) * dt; s.x += s.v * dt; return s.x; }
+const hash = k => (location.hash.match(new RegExp(k + "=([0-9.]+)")) || [])[1];
+const TVMODE = !!window.TV || /[?&]tv\b/.test(location.search);       // the TV app, or ?tv to preview its look in a browser
+if (TVMODE) document.body.classList.add("tv");
+let tick = 0, everyOther = true;                                   // on the TV, true every second frame (set in frame())
+const acc = {};                                                       // time saved up for layers that skip frames
+let scrolling = false;                                              // between sections (set in frame())
+const later = (k, dt) => { acc[k] = (acc[k] || 0) + dt; if (!everyOther || (TVMODE && scrolling)) return 0; const d = acc[k]; acc[k] = 0; return d; };
+const css = (el, prop, v) => { if (el["_" + prop] !== v) { el.style[prop] = v; el["_" + prop] = v; } };
+
+// ================================================================ SETTINGS
+// config.js gives the starting dock and film service; the Customise panel's choices are kept by the TV app
+// (and in the page's storage when previewing in a browser) and win over it.
+const DEFAULTS = window.CASTLE || { dock: [], films: "search", links: {} };
+const HAS_TV = !!window.TV;
+// a browser preview has no TV to ask: these stand in for its apps and HDMI ports
+const SIM = {
+  apps: [["com.amazon.amazonvideo.livingroom", "Prime Video"], ["com.apple.atve.androidtv.appletv", "Apple TV"], ["com.disney.disneyplus", "Disney+"],
+         ["in.startv.hotstar", "JioHotstar"], ["com.wbd.stream", "Max"], ["com.netflix.ninja", "Netflix"], ["com.plexapp.android", "Plex"],
+         ["com.spotify.tv.android", "Spotify"], ["com.google.android.youtube.tv", "YouTube"], ["com.android.tv.settings", "Settings", false],
+         ["com.mediatek.factorymenu", "Factory Menu", false]].map(([pkg, label, media]) => ({ pkg, label, media: media !== false })),
+  inputs: [{ id: "hdmi1", label: "HDMI 1" }, { id: "hdmi3", label: "PlayStation 5 · HDMI 3" }],
+};
+const parse = (j, d) => { try { return JSON.parse(j) || d; } catch (e) { return d; } };
+const tvApps = () => HAS_TV ? parse(TV.apps(), []) : SIM.apps;
+const tvInputs = () => HAS_TV ? parse(TV.inputs(), []) : SIM.inputs;
+const inputMatch = (name, inp) => inp.id === name || inp.label.toLowerCase().includes(name.toLowerCase()) ||
+                                  (/playstation|\bps[345]\b/i.test(name) && /playstation|\bps[345]\b/i.test(inp.label));
+const tvHas = pkg => HAS_TV ? TV.has(pkg) : pkg.startsWith("input:") ? SIM.inputs.some(i => inputMatch(pkg.slice(6), i)) : SIM.apps.some(a => a.pkg === pkg);
+function loadSettings() {
+  let j = HAS_TV ? TV.loadConfig() : "";
+  if (!j) try { j = localStorage.getItem("castle") || ""; } catch (e) { }
+  return j ? parse(j, null) : null;
+}
+function saveSettings() {
+  const j = JSON.stringify(settings);
+  if (HAS_TV) TV.saveConfig(j);
+  try { localStorage.setItem("castle", j); } catch (e) { }
+}
+const firstRun = !loadSettings() && DEFAULTS.askOnFirstRun !== false;      // config.js already set up for this TV: don't ask
+const settings = Object.assign({ dock: DEFAULTS.dock, films: DEFAULTS.films }, loadSettings() || {});
+const esc = x => String(x).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ================================================================ HOME
+// Apps with a gold logo here use it (sized as in the default launcher, less 17.5%; perch: where on the logo the owl
+// stands, 0 = its top edge). Any other app gets its name in candle gold.
+const LOGOS = {
+  "com.netflix.ninja":                 { f: "netflix",    h: 97,  dh: 97,  perch: 0.069 },
+  "com.amazon.amazonvideo.livingroom": { f: "prime",      w: 180, dh: 51,  perch: 0.622 },      // the owl sits in the dip of the smile
+  "in.startv.hotstar":                 { f: "jiohotstar", h: 111, dh: 111, perch: 0.07 },
+  "playstation":                       { f: "ps5",        w: 101, dh: 79,  perch: 0.032 },      // an HDMI port with a PlayStation on it
+  "com.google.android.youtube.tv":     { f: "youtube",    w: 86,  dh: 61,  perch: 0.026 },
+  "com.apple.atve.androidtv.appletv":  { f: "appletv",    h: 87,  dh: 87,  perch: 0.062 },
+};
+const logoFor = e => LOGOS[e.pkg] || (e.pkg.startsWith("input:") && /playstation|\bps[345]\b/i.test(e.pkg + " " + e.label) ? LOGOS.playstation : null);
+const CELL = 292;
+let DOCK_X = 84, APPS = [], cells = [];
+const dock = $("#dock");
+let app = parseInt(hash("app") || "2");
+function buildDock() {
+  APPS = settings.dock.filter(e => tvHas(e.pkg)).slice(0, 6).map(e => {
+    const L = logoFor(e), size = Math.round(clamp(52 - (e.label.length - 9) * 2.6, 32, 52));
+    return Object.assign({ n: e.label, target: e.pkg }, L || { size, dh: size, perch: 0.1 });
+  });
+  if (!APPS.length) APPS = [{ n: "Customise", target: "customise", size: 52, dh: 52, perch: 0.1 }];   // nothing chosen yet
+  DOCK_X = (1920 - CELL * APPS.length) / 2;
+  dock.style.left = DOCK_X + "px"; dock.style.width = CELL * APPS.length + "px";
+  dock.innerHTML = "";
+  cells = APPS.map((a, i) => {
+    const c = document.createElement("div");
+    c.className = "cell" + (a.f ? "" : " word");
+    c.innerHTML = a.f ? `<div class="logo"><img src="img/logos/warm/icon_${a.f}.png" alt="" style="${a.h ? "height:" + a.h : "width:" + a.w}px"></div><div class="name">${esc(a.n)}</div>`
+                      : `<div class="logo"><span style="font-size:${a.size}px">${esc(a.n)}</span></div>`;
+    if (!TVMODE) c.addEventListener("click", () => (app === i ? openApp() : focusApp(i)));
+    dock.appendChild(c);
+    return { el: c, logo: c.querySelector(".logo"), s: spring(1, 260, 0.55) };
+  });
+  app = clamp(app, 0, APPS.length - 1);
+  cells[app].el.classList.add("on"); cells[app].s.x = 1.18;
+}
+buildDock();
+const mid = () => (APPS.length - 1) / 2;                      // the camera leans a little toward the focused app
+const appX = i => DOCK_X + CELL * i + CELL / 2;
+
+// the camera: a slow breath all the time, and on every move a small push in and back out with the faintest wobble
+const cam = { zoom: spring(0, 30, 0.5), rot: spring(0, 45, 0.28), pan: spring(-(app - mid()) * 12, 16, 0.75), bob: spring(0, 40, 0.4) };
+const glowX = spring(appX(app), 70, 0.8);
+let dsp = [];
+function focusApp(i) {
+  i = clamp(i, 0, APPS.length - 1);
+  if (i === app) { cam.rot.v += (i === 0 ? -1 : 1) * 0.6; return; }       // at the end: just a tiny nudge
+  const dir = Math.sign(i - app);
+  cells[app].el.classList.remove("on");
+  app = i;
+  cells[app].el.classList.add("on");
+  cam.zoom.v += 0.13;                                         // about a 1% push in, then it eases back out
+  cam.rot.v += dir * 2.0;                                     // about 0.2° of tilt, rocking back twice as it settles
+  cam.bob.v += 16;
+  for (let k = 0; k < 8; k++) dsp.push({ x: appX(app) + (Math.random() - .5) * 150, y: 853 + (Math.random() - .5) * 110, vx: (Math.random() - .5) * 30 - dir * 40,
+                                          vy: -20 - Math.random() * 50, life: 0.7 + Math.random() * 0.6, r: 0.8 + Math.random() * 1.8 });
+}
+
+// ---------------------------------------------------------------- the owl: perched on the focused app, it hops across to the next one
+// two sprite sheets (owl/*.webp, tools/owl_sprites.py); in both the standing owl is 150 px tall and each records where its feet are,
+// so they swap without a jump. On screen the owl stands OWL_H px tall.
+const OWL_H = 128;
+const HOP = { up: 0.65, down: 2.22, end: 3.0, rate: 1.7 };  // in the hop clip: take-off, touch-down, settled (s); played 1.7x
+// each clip has its own canvas, sized to its cell and pinned at its feet, so switching never re-allocates one
+const SHEET = {};
+for (const k in OWL_SHEETS) {
+  const sh = SHEET[k] = Object.assign({ img: new Image() }, OWL_SHEETS[k]);
+  sh.img.src = sh.src;
+  sh.cv = $(k === "hop" ? "#owlHop" : "#owlIdle"); sh.cv.width = sh.cw; sh.cv.height = sh.ch;
+  sh.cv.style.transformOrigin = `${sh.footX}px ${sh.footY}px`;
+  sh.ctx = sh.cv.getContext("2d");
+}
+const perchY = i => 853 + APPS[i].dh * cells[i].s.x * (APPS[i].perch - 0.5);
+const owl = { at: app, to: app, face: 1, hopping: false, hopT: 0, idleT: 0, idleWait: 1, sx: 0, sy: 0, x: appX(app), y: 0, landed: true };
+function hop(to, from) {
+  owl.to = to; owl.sx = owl.x; owl.sy = owl.y; owl.landed = false;
+  owl.face = Math.sign(appX(to) - owl.x) || owl.face;
+  owl.hopping = true; owl.hopT = from;
+}
+let owlSheet;
+function drawOwl(sh, t) {
+  if (owlSheet !== sh) {                                         // switching clips: show that clip's canvas
+    if (owlSheet) css(owlSheet.cv, "visibility", "hidden");
+    owlSheet = sh; css(sh.cv, "visibility", "visible");
+  }
+  const f = Math.min(sh.n - 1, Math.floor(t * sh.fps));
+  if (!sh.img.complete || sh.last === f) return;                  // not loaded yet, or the same picture as last frame
+  sh.last = f;
+  sh.ctx.clearRect(0, 0, sh.cw, sh.ch);
+  if (sh.frames) { const [sx, sy, w, h, dx, dy] = sh.frames[f]; sh.ctx.drawImage(sh.img, sx, sy, w, h, dx, dy, w, h); }   // the TV's packed sheets
+  else sh.ctx.drawImage(sh.img, (f % sh.cols) * sh.cw, Math.floor(f / sh.cols) * sh.ch, sh.cw, sh.ch, 0, 0, sh.cw, sh.ch);
+}
+function updateOwl(dt, t) {
+  if (!owl.hopping) {
+    if (owl.at !== app) hop(app, 0);
+    else {
+      owl.x = appX(owl.at); owl.y = perchY(owl.at);
+      // between glances it just sits (breathing); then one slow look around
+      if (owl.idleWait > 0) owl.idleWait -= dt;
+      else if ((owl.idleT += dt) >= SHEET.idle.n / SHEET.idle.fps) { owl.idleT = 0; owl.idleWait = 1.5 + Math.random() * 3; }
+    }
+  }
+  if (owl.hopping) {
+    owl.hopT += dt * HOP.rate;
+    const ht = owl.hopT;
+    if (app !== owl.to && ht < HOP.down) {                    // changed its mind mid-air: steer to the new perch without a jump
+      const u = ease(clamp((ht - HOP.up) / (HOP.down - HOP.up), 0, 1));
+      owl.to = app; owl.face = Math.sign(appX(app) - owl.x) || owl.face;
+      if (u < 0.95) { owl.sx = (owl.x - appX(app) * u) / (1 - u); owl.sy = (owl.y - perchY(app) * u) / (1 - u); }
+    }
+    const u = ease(clamp((ht - HOP.up) / (HOP.down - HOP.up), 0, 1));
+    const far = Math.abs(appX(owl.to) - owl.sx) / CELL;       // a longer trip gets a higher arc
+    owl.x = owl.sx + (appX(owl.to) - owl.sx) * u;
+    owl.y = owl.sy + (perchY(owl.to) - owl.sy) * u - Math.max(0, far - 1) * 46 * Math.sin(Math.PI * u);
+    if (!owl.landed && ht >= HOP.down) {
+      owl.landed = true; owl.at = owl.to;
+      for (let k = 0; k < 10; k++) dsp.push({ x: owl.x + (Math.random() - .5) * 70, y: owl.y + (Math.random() - .5) * 10, vx: (Math.random() - .5) * 90,
+                                              vy: -10 - Math.random() * 40, life: 0.5 + Math.random() * 0.5, r: 0.7 + Math.random() * 1.4 });
+    }
+    if (owl.landed && app !== owl.at) hop(app, HOP.up - 0.22);      // already asked to go on: spring straight off again
+    else if (ht >= HOP.end) { owl.hopping = false; owl.idleT = 0; owl.idleWait = 0.8 + Math.random() * 1.5; }
+  }
+  if (owl.hopping || owlWarm) drawOwl(SHEET.hop, owl.hopping ? owl.hopT : 1.3);    // (owlWarm: start-up, getting the hop picture onto the GPU)
+  else drawOwl(SHEET.idle, owl.idleWait > 0 ? 0 : owl.idleT);
+  const breathe = OWL_H / (owlSheet.owlH || 150) * (owl.hopping ? 1 : 1 + 0.006 * Math.sin(t * 2.4));
+  owlSheet.cv.style.transform = `translate3d(${(owl.x - owlSheet.footX).toFixed(1)}px, ${(owl.y - owlSheet.footY).toFixed(1)}px, 0) scale(${owl.face * breathe}, ${breathe})`;
+}
+
+// stars and lake glints come from the photo itself (tools/gen_points.py)
+const SW = 1935, SH = 1080;
+const STARS = POINTS.stars.slice(0, TVMODE ? 64 : 999).map(([x, y, b]) => ({ x: x * SW, y: y * SH, b: clamp(b * 1.3, 0.3, 1), w: 0.6 + Math.random() * 2.2, p: Math.random() * 6.28, r: 2.5 + b * 4 }));
+const GLINTS = POINTS.glints.map(([x, y]) => ({ x: x * SW, y: y * SH }));
+function sprite(w, h, stops) {                             // a soft round glow, squashed to w x h
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const g = c.getContext("2d"), rg = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  stops.forEach(([o, col]) => rg.addColorStop(o, col));
+  g.scale(1, h / w); g.fillStyle = rg; g.fillRect(0, 0, w, w);
+  return c;
+}
+const starSpr = sprite(32, 32, [[0, "rgba(255,255,255,1)"], [0.12, "rgba(225,238,255,.9)"], [0.35, "rgba(170,200,255,.25)"], [1, "rgba(150,180,255,0)"]]);
+const warmSpr = sprite(48, 8, [[0, "rgba(255,226,170,1)"], [0.4, "rgba(255,180,100,.5)"], [1, "rgba(255,150,60,0)"]]);
+const coolSpr = sprite(48, 8, [[0, "rgba(230,240,255,.9)"], [0.4, "rgba(180,205,240,.35)"], [1, "rgba(150,180,230,0)"]]);
+const sky = $("#sky").getContext("2d"), water = $("#water").getContext("2d");
+water.setTransform(1, 0, 0, 1, -560, -800);                 // draw in photo coordinates
+let glints = [], meteor = null, nextMeteor = 6 + Math.random() * 8;
+function drawSky(t, dt) {
+  sky.clearRect(0, 0, SW, 250);
+  sky.globalCompositeOperation = "lighter";
+  water.clearRect(560, 800, 1120, 280);
+  water.globalCompositeOperation = "lighter";
+  for (const s of STARS) {
+    const tw = 0.5 + 0.5 * Math.sin(t * s.w + s.p);
+    sky.globalAlpha = s.b * (0.15 + 0.85 * tw * tw * tw);
+    sky.drawImage(starSpr, s.x - s.r, s.y - s.r, s.r * 2, s.r * 2);
+  }
+  // warm glints in the castle's reflection, a few cool ones where the moon would catch the water
+  while (glints.length < 34) {
+    const moon = Math.random() < 0.22;
+    const p = moon ? { x: 600 + Math.random() * 170, y: 830 + Math.random() * 220 } : GLINTS[(Math.random() * GLINTS.length) | 0];
+    glints.push({ x: p.x + (Math.random() - .5) * 6, y: p.y, w: 10 + Math.random() * (moon ? 26 : 18), age: -Math.random() * 1.5, life: 0.7 + Math.random() * 1.2, moon });
+  }
+  glints = glints.filter(g => (g.age += dt) < g.life);
+  for (const g of glints) {
+    if (g.age < 0) continue;
+    water.globalAlpha = Math.sin(Math.PI * g.age / g.life) * (g.moon ? 0.35 : 0.6);
+    water.drawImage(g.moon ? coolSpr : warmSpr, g.x - g.w / 2, g.y - 2, g.w, 4);
+  }
+  // now and then, a shooting star over the hills on the left (never across the castle)
+  if (!meteor && t > nextMeteor) meteor = { x: 300 + Math.random() * 420, y: 20 + Math.random() * 120, a: 0 };
+  if (meteor) {
+    meteor.a += dt / 0.9;
+    const k = ease(Math.min(1, meteor.a)), hx = meteor.x - 260 * k, hy = meteor.y + 95 * k;
+    const g = sky.createLinearGradient(hx, hy, hx + 150, hy - 55);
+    const al = Math.sin(Math.PI * Math.min(1, meteor.a)) * 0.8;
+    g.addColorStop(0, `rgba(235,242,255,${al})`); g.addColorStop(1, "rgba(235,242,255,0)");
+    sky.globalAlpha = 1; sky.strokeStyle = g; sky.lineWidth = 1.6; sky.lineCap = "round";
+    sky.beginPath(); sky.moveTo(hx, hy); sky.lineTo(hx + 150, hy - 55); sky.stroke();
+    if (meteor.a >= 1) { meteor = null; nextMeteor = t + 14 + Math.random() * 16; }
+  }
+  sky.globalAlpha = 1;
+}
+
+// candlelight in the windows: two interleaved layers, each flickering on its own; cropped to where there is any light
+for (const id of ["#winA", "#winB"]) {
+  const el = $(id), [x, y, w, h] = WIN_CROP;
+  Object.assign(el.style, { left: x * SW + "px", top: y * SH + "px", width: w * SW + "px", height: h * SH + "px" });
+}
+const flick = (t, s) => 0.5 + 0.30 * Math.sin(t * 1.9 + s) * Math.sin(t * 0.71 + s * 2.3) + 0.12 * Math.sin(t * 6.1 + s * 3.1) + 0.06 * Math.sin(t * 13.7 + s);
+const dctx = $("#dsp").getContext("2d");
+dctx.setTransform(1, 0, 0, 1, 0, -520);                     // draw in screen coordinates
+
+function home(t, dt, pg) {
+  const zoom = step(cam.zoom, 0, dt), rot = step(cam.rot, 0, dt), pan = step(cam.pan, -(app - mid()) * 12, dt), bob = step(cam.bob, 0, dt);
+  const breath = 1.045 + 0.009 * Math.sin(t * 2 * Math.PI / 22);
+  const dx = 6 * Math.sin(t * 2 * Math.PI / 37), dy = 3 * Math.sin(t * 2 * Math.PI / 29 + 1), dr = 0.04 * Math.sin(t * 2 * Math.PI / 41);
+  // leaving for the library: the camera pushes in and tilts down past the castle
+  $("#cam").style.transform = `translate3d(${pan + dx}px, ${bob + dy + 320 * pg}px, 0) scale(${breath + zoom + (TVMODE ? 0 : 0.1 * ease(pg)) + boost}) rotate(${rot + dr}deg)`;
+  css($("#home"), "transform", `translate3d(0, ${(-1080 * pg).toFixed(1)}px, 0)`);
+  if (TVMODE) {   // the mist and the hint move here, in step with everything else: as CSS animations they'd make the TV redraw on their own clock
+    css($("#mist1 .strip"), "transform", `translateX(${(-(t * 11.38) % 1707).toFixed(1)}px)`);
+    css($("#toLib"), "transform", `translateX(-50%) translateY(${(2.5 - 2.5 * Math.cos(t * 2 * Math.PI / 2.6)).toFixed(2)}px)`);
+  }
+  $("#winA").style.opacity = (0.22 + 0.42 * flick(t, 0)).toFixed(3);
+  $("#winB").style.opacity = (0.22 + 0.42 * flick(t, 2.4)).toFixed(3);
+  $("#moonglow").style.opacity = (0.75 + 0.2 * Math.sin(t / 6.5)).toFixed(3);
+  const skyDt = later("sky", dt); if (skyDt) drawSky(t, skyDt);
+  // the dock: focus grows with a little spring, a warm pool of light follows it
+  cells.forEach((c, i) => { const s = step(c.s, i === app ? 1.18 : 1, dt); css(c.logo, "transform", `scale(${s.toFixed(3)})`); });
+  $("#glow").style.transform = `translateX(${step(glowX, appX(app), dt)}px)`;
+  updateOwl(dt, t);
+  $("#glow").style.opacity = (0.85 + 0.15 * Math.sin(t * 1.3)).toFixed(3);
+  css($("#dsp"), "visibility", dsp.length ? "visible" : "hidden");
+  dctx.clearRect(0, 520, 1920, 560);
+  dctx.globalCompositeOperation = "lighter";
+  dsp = dsp.filter(p => (p.life -= dt) > 0);
+  for (const p of dsp) {
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vy -= 10 * dt;
+    dctx.globalAlpha = Math.min(1, p.life * 1.4) * 0.8;
+    dctx.drawImage(starSpr, p.x - p.r * 3, p.y - p.r * 3, p.r * 6, p.r * 6);
+  }
+  dctx.globalAlpha = 1;
+}
+
+function clock() {
+  const d = new Date();
+  $("#clock .t").textContent = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?[AP]M/i, "");
+  $("#clock .d").textContent = d.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
+}
+clock(); setInterval(clock, 5000);
+
+// ================================================================ LIBRARY
+// id: the film's key in config.js's links (hp1..hp8 here, fb1..fb3 in the greenhouse)
+const FILMS = [
+  { t: "Harry Potter and the Philosopher's Stone", s: "Philosopher's Stone", y: 2001, c: "#7a2a20", pages: 223, id: "hp1" },
+  { t: "Harry Potter and the Chamber of Secrets",  s: "Chamber of Secrets",  y: 2002, c: "#2c5238", pages: 251, id: "hp2" },
+  { t: "Harry Potter and the Prisoner of Azkaban", s: "Prisoner of Azkaban", y: 2004, c: "#2a3a62", pages: 317, id: "hp3" },
+  { t: "Harry Potter and the Goblet of Fire",      s: "Goblet of Fire",      y: 2005, c: "#3e2c22", pages: 636, id: "hp4" },
+  { t: "Harry Potter and the Order of the Phoenix",s: "Order of the Phoenix",y: 2007, c: "#53305a", pages: 766, id: "hp5" },
+  { t: "Harry Potter and the Half-Blood Prince",   s: "Half-Blood Prince",   y: 2009, c: "#55592c", pages: 607, id: "hp6" },
+  { t: "Harry Potter and the Deathly Hallows – Part 1", s: "Deathly Hallows · I",  y: 2010, c: "#474b52", pages: 607, id: "hp7" },
+  { t: "Harry Potter and the Deathly Hallows – Part 2", s: "Deathly Hallows · II", y: 2011, c: "#3a2c3e", pages: 607, id: "hp8" },
+];
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+const W = 200, H = 300;                                     // a cover, sized to the books already in the photo
+const STAR = '<svg viewBox="0 0 24 24"><path fill="#d6b05c" d="M12 2l2.6 6.9L22 9.3l-5.8 4.6L18.2 21 12 17l-6.2 4 2-7.1L2 9.3l7.4-.4z"/></svg>';
+const row = $("#row");
+const mix = (a, b, t) => "#" + [1, 3, 5].map(k => Math.round(parseInt(a.substr(k, 2), 16) * (1 - t) + parseInt(b.substr(k, 2), 16) * t).toString(16).padStart(2, "0")).join("");
+const books = FILMS.map((f, i) => {
+  const lc = mix(f.c, "#2a1a10", 0.38);                     // the film's colour, aged into leather
+  const T = Math.round((60 + f.pages * 0.08) * 0.62);       // thicker through the series, like the real books
+  const el = document.createElement("div");
+  el.className = "book";
+  el.style.width = W + "px"; el.style.height = H + "px";
+  const face = (cls, w, h, tf, html = "") =>
+    `<div class="face ${cls}" style="width:${w}px;height:${h}px;left:${(W - w) / 2}px;top:${(H - h) / 2}px;transform:${tf}">${html}<div class="shade"></div></div>`;
+  el.innerHTML =
+    // (no back, top or bottom: the books never turn far enough, and the eye is level with the shelf, to show them)
+    face("pages fore", T - 4, H - 6, `rotateY(90deg) translateZ(${W / 2 - 3}px)`) +
+    face("inside", W - 4, H - 4, `translateZ(${T / 2 - 3}px)`, `<div class="s">${ROMAN[i]} &nbsp;·&nbsp; ${f.y}</div><div class="t">${f.t}</div><div class="s now"></div>`) +
+    face("spine leather", T, H, `rotateY(-90deg) translateZ(${W / 2}px)`,
+         `<div style="position:absolute;inset:0;background:linear-gradient(90deg, rgba(0,0,0,.6), rgba(255,226,180,.12) 38%, rgba(255,226,180,.05) 62%, rgba(0,0,0,.62)), linear-gradient(180deg, rgba(255,200,130,.16), rgba(0,0,0,0) 30%, rgba(0,0,0,.32)), ${lc};box-shadow:inset 0 0 6px rgba(0,0,0,.55)"></div>
+          <div class="bands" style="top:14px"></div><div class="bands" style="top:44px"></div><div class="bands" style="bottom:44px"></div><div class="bands" style="bottom:14px"></div>
+          <div class="roman" style="position:relative">${ROMAN[i]}</div><div class="stitle" style="position:relative">${f.s}</div><div class="star" style="position:relative">${STAR}</div>`) +
+    face("front leather", W, H, `translateZ(${T / 2}px)`, `<div style="position:absolute;inset:0;background:${lc}"></div><img src="covers/aged/${i + 1}.jpg" alt="" style="position:relative"><div class="sheen"></div>`);
+  if (!TVMODE) el.addEventListener("click", () => (Math.round(focus) === i ? openFilm() : (target = i)));
+  row.appendChild(el);
+  return { el, T, front: el.querySelector(".front"), spine: el.querySelector(".spine"), inside: el.querySelector(".inside"),
+           fshade: el.querySelector(".front .shade"), sshade: el.querySelector(".spine .shade"), sheen: el.querySelector(".sheen") };
+});
+
+let target = clamp(parseFloat(hash("f") || "0"), 0, FILMS.length - 1), focus = target, vel = 0, opening = false, openT = 0;
+let landed = -1, landedAt = 0, focusX = 0;
+
+function layout(dt, now, arrive) {
+  // one continuous focus value on a critically damped spring: quick, no overshoot, redirectable mid-move
+  const k = 120, d = 2 * Math.sqrt(k);
+  vel += (k * (target - focus) - d * vel) * dt;
+  focus += vel * dt;
+  // each book's "openness": 1 for the chosen one, 0 a book away; nothing turns until you've arrived on the shelf
+  const e = books.map((b, i) => ease(Math.max(0, 1 - Math.abs(i - focus))) * arrive);
+  const foot = books.map((b, i) => b.T + 3 + (W + 40 - b.T - 3) * e[i]);
+  const centres = []; let x = 0;
+  foot.forEach((w, i) => { centres.push(x + w / 2); x += w; });
+  const off = x / 2;                                          // the row stays centred in the gap on the shelf
+  const i0 = clamp(Math.floor(focus), 0, books.length - 1), i1 = Math.min(books.length - 1, i0 + 1);
+  focusX = centres[i0] + (centres[i1] - centres[i0]) * (focus - i0) - off;
+  const bob = Math.sin(now / 900) * 3;
+  const pick = Math.round(target);
+  books.forEach((b, i) => {
+    const o = e[i];
+    const ang = 90 - 104 * o;                                 // spine out (90°) -> cover facing, turned enough to show its pages
+    const z = -W / 2 * (1 - o) + 180 * o + (opening && i === pick ? 120 * openT : 0);
+    const lift = (-30 + bob) * o;
+    css(b.el, "transform", `translate3d(${(centres[i] - off - W / 2).toFixed(1)}px, ${lift.toFixed(1)}px, ${z.toFixed(1)}px) rotateY(${ang.toFixed(2)}deg)`);
+    const rad = ang * Math.PI / 180;                          // whichever face points at you is lit, the other falls into shadow
+    css(b.fshade, "opacity", (0.8 * (1 - Math.max(0, Math.cos(rad)))).toFixed(2));
+    css(b.sshade, "opacity", (0.26 + 0.55 * (1 - Math.max(0, Math.sin(rad)))).toFixed(2));
+    css(b.front, "transformOrigin", "left center");
+    const swing = opening && i === pick;
+    css(b.inside, "display", swing ? "flex" : "none");
+    css(b.front, "transform", swing ? `translateZ(${b.T / 2}px) rotateY(${(-150 * ease(Math.min(1, openT * 1.4))).toFixed(1)}deg)` : `translateZ(${b.T / 2}px)`);
+  });
+  const lit = Math.max(...e);
+  const fx = (978 + focusX).toFixed(1) + "px";
+  css($("#plate"), "transform", `translateX(${fx}) translateX(-50%)`); css($("#plate"), "opacity", arrive.toFixed(2));
+  css($("#cshadow"), "transform", `translateX(${fx})`); css($("#cshadow"), "opacity", (lit * 0.85).toFixed(2));
+  css($("#booklight"), "transform", `translateX(${fx})`); css($("#booklight"), "opacity", lit.toFixed(2));
+  // a sheen sweeps across the cover once a book lands
+  const settled = Math.abs(vel) < 0.05 && Math.abs(target - focus) < 0.02 && arrive > 0.99;
+  if (settled && landed !== pick) { landed = pick; landedAt = now; }
+  if (!settled) landed = -1;
+  books.forEach((b, i) => css(b.sheen, "backgroundPosition", (120 - 140 * (i === landed ? Math.min(1, (now - landedAt) / 1100) : 0)).toFixed(1) + "% 0"));
+  return Math.abs(vel) > 0.6;
+}
+
+const plate = $("#plate span");
+let shown = -1;
+function label() {
+  const i = Math.round(focus);
+  if (i === shown) return;
+  shown = i;
+  plate.style.opacity = 0;
+  setTimeout(() => { const f = FILMS[i]; plate.textContent = `${ROMAN[i]}  ·  ${f.s}  ·  ${f.y}`; plate.style.opacity = 1; }, 150);
+}
+
+const dust = $("#dust").getContext("2d"), sparks = dust;
+dust.setTransform(0.5, 0, 0, 0.5, 0, 0);                    // a half-resolution canvas, drawn in screen coordinates (soft dots)
+const motes = Array.from({ length: 90 }, () => ({ x: 140 + Math.random() * 1640, y: Math.random() * 1080, r: 0.6 + Math.random() * 1.8,
+  vx: (Math.random() - .5) * 6, vy: -2 - Math.random() * 5, p: Math.random() * 6.28 }));
+let sp = [];
+function particles(dt, now, moving) {
+  dust.clearRect(0, 0, 1920, 1080);
+  dust.globalCompositeOperation = "lighter";
+  for (const m of motes) {
+    m.x += (m.vx + Math.sin(now / 1700 + m.p) * 4) * dt; m.y += m.vy * dt;
+    if (m.y < -10) { m.y = 1090; m.x = 140 + Math.random() * 1640; }
+    dust.globalAlpha = Math.max(0, 0.14 + 0.16 * Math.sin(now / 900 + m.p * 3)) * 1.6;
+    dust.drawImage(dotSpr, m.x - m.r * 2, m.y - m.r * 2, m.r * 4, m.r * 4);
+  }
+  if (moving) for (let k = 0; k < 3; k++) sp.push({ x: 978 + focusX + (Math.random() - .5) * 220, y: 420 + Math.random() * 260, vx: (Math.random() - .5) * 120 - vel * 30,
+                                                   vy: -30 - Math.random() * 70, life: 1, r: 0.8 + Math.random() * 1.8 });
+  sp = sp.filter(s => (s.life -= dt * 1.3) > 0);
+  for (const s of sp) {
+    s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 30 * dt;
+    const r = s.r * (0.6 + s.life) * 2;
+    sparks.globalAlpha = Math.min(1, s.life * 0.9);
+    sparks.drawImage(dotSpr, s.x - r, s.y - r, r * 2, r * 2);
+  }
+  dust.globalAlpha = 1;
+}
+
+function library(t, dt, now, pg) {
+  const d = pg - 1;                                           // -1 = still at home, 0 = here, 1 = down in the greenhouse
+  const arrive = ease(clamp(1 - Math.abs(d) / 0.18, 0, 1));
+  if (opening) openT = Math.min(1, openT + dt / 1.1);
+  const moving = layout(dt, now, arrive);
+  label(); const pdt = later("dust", dt); if (pdt) particles(pdt, now, moving);
+  // arriving: the shelf rises into place and settles from a slight push-in (and the same in reverse on the way out)
+  css($("#library"), "transform", `translate3d(0, ${(-1080 * d).toFixed(1)}px, 0)`);
+  $("#seam").style.opacity = (d < 0 ? ease(-d) : 0).toFixed(3);      // the two scenes meet in shadow, not on a hard line
+  $("#lcam").style.transform = `translate3d(${-focusX * 0.03}px, ${240 * d}px, 0) scale(${1 + (TVMODE ? 0 : 0.06 * ease(Math.min(1, Math.abs(d)))) + boost})`;
+  const c = 0.85 + 0.1 * Math.sin(t * 4.3) + 0.05 * Math.sin(t * 11.3);
+  $("#candle").style.opacity = c.toFixed(3);
+  $("#potG").style.opacity = (0.7 + 0.3 * Math.sin(t * 1.4)).toFixed(3);
+  $("#potP").style.opacity = (0.7 + 0.3 * Math.sin(t * 1.1 + 2)).toFixed(3);
+  $("#potA").style.opacity = (0.75 + 0.15 * Math.sin(t * 5.1) + 0.1 * Math.sin(t * 9.7)).toFixed(3);
+}
+
+// ================================================================ GREENHOUSE
+// one beast per film, each in its spot in greenhouse_beasts.jpg: the coin thief on the stump, the long-tailed cat on the moonlit stone,
+// the newborn in the nest (x, y = the middle of the creature on screen)
+const BEASTS = [
+  { k: "Fantastic Beasts · I · 2016",   t: "Where to Find Them",        full: "Fantastic Beasts and Where to Find Them",       x: 422,  y: 500, id: "fb1" },
+  { k: "Fantastic Beasts · II · 2018",  t: "The Crimes of Grindelwald", full: "Fantastic Beasts: The Crimes of Grindelwald",   x: 960,  y: 615, id: "fb2" },
+  { k: "Fantastic Beasts · III · 2022", t: "The Secrets of Dumbledore", full: "Fantastic Beasts: The Secrets of Dumbledore",   x: 1577, y: 678, id: "fb3" },
+];
+let spot = clamp(parseInt(hash("b") || "1"), 0, 2), capShown = -1;
+const gx = spring(BEASTS[spot].x, 30, 0.85), gy = spring(BEASTS[spot].y, 30, 0.85);
+const gcamS = { zoom: spring(0, 30, 0.5), rot: spring(0, 45, 0.28) };
+function focusSpot(i) {
+  i = clamp(i, 0, 2);
+  if (i === spot) { gcamS.rot.v += (i === 0 ? -1 : 1) * 0.6; return; }
+  gcamS.rot.v += Math.sign(i - spot) * 2.0; gcamS.zoom.v += 0.13;
+  spot = i;
+}
+// the reveal's light and dark fall off along a smootherstep curve (flat at both ends), drawn with many stops,
+// so there is no edge anywhere for the eye to catch as a ring
+const smoother = x => x * x * x * (x * (x * 6 - 15) + 10);
+function softRadial(ctx, cx, cy, rx, ry, inner, col, everywhere) {   // col(f) -> rgba at falloff f (0 = centre, 1 = fully out)
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+  for (let i = 0; i <= 32; i++) { const r = i / 32; g.addColorStop(r, col(smoother(clamp((r - inner) / (1 - inner), 0, 1)))); }
+  const k = ctx.canvas.width / 1920;                          // the canvas may be smaller than the screen
+  ctx.setTransform(k, 0, 0, k * ry / rx, k * cx, k * cy);     // the circle, squashed into an ellipse
+  ctx.fillStyle = g;
+  if (everywhere) ctx.fillRect(-cx, -cy * rx / ry, 1920, 1080 * rx / ry); else ctx.fillRect(-rx, -rx, 2 * rx, 2 * rx);
+  ctx.setTransform(k, 0, 0, k, 0, 0);
+}
+const gsh = $("#gshade").getContext("2d");
+gsh.setTransform(0.25, 0, 0, 0.25, 0, 0);                   // a quarter resolution is plenty for a soft gradient
+let shadeAt = [-1, -1];
+function drawShade(lx, ly) {
+  if (Math.abs(shadeAt[0] - lx) < 0.05 && Math.abs(shadeAt[1] - ly) < 0.05) return;        // the light hasn't moved
+  shadeAt = [lx, ly];
+  gsh.clearRect(0, 0, 1920, 1080);
+  gsh.globalCompositeOperation = "source-over";
+  softRadial(gsh, lx, ly, 620, 520, 0.12, f => `rgba(3,8,10,${(0.66 * f).toFixed(4)})`, true);
+  gsh.globalCompositeOperation = "lighter";                     // and a warm pool of lantern light on the chosen beast
+  softRadial(gsh, lx, ly, 380, 300, 0, f => `rgba(${Math.round(255 - 105 * f)},${Math.round(214 + 16 * f)},${Math.round(150 + 70 * f)},${(0.2 * (1 - f)).toFixed(4)})`, false);
+}
+const gfx = $("#gfx").getContext("2d");
+gfx.setTransform(0.5, 0, 0, 0.5, 0, 0);                     // half resolution, as for the library's dust
+const flies = Array.from({ length: 46 }, () => ({ x: 120 + Math.random() * 1680, y: 260 + Math.random() * 640, p: Math.random() * 6.28,
+  w: 0.4 + Math.random() * 0.8, r: 1 + Math.random() * 1.6, vx: (Math.random() - .5) * 10, vy: (Math.random() - .5) * 6 }));
+const wisps = Array.from({ length: 26 }, (_, k) => ({ a: k / 26 * 6.283, r: 40 + Math.random() * 70, h: Math.random(), w: 0.5 + Math.random() * 0.9, s: 0.8 + Math.random() * 1.6 }));
+function garden(t, dt, pg) {
+  const d = pg - 2;                                           // -1 = still in the library, 0 = here
+  css($("#garden"), "transform", `translate3d(0, ${(-1080 * d).toFixed(1)}px, 0)`);
+  $("#gseam").style.opacity = ease(-d).toFixed(3);
+  if (TVMODE) css($("#gmist .strip"), "transform", `translateX(${(-(t * 8.98) % 1707).toFixed(1)}px)`);
+  const x = step(gx, BEASTS[spot].x, dt), y = step(gy, BEASTS[spot].y, dt);
+  const zoom = step(gcamS.zoom, 0, dt), rot = step(gcamS.rot, 0, dt);
+  const breath = 1.03 + 0.006 * Math.sin(t * 2 * Math.PI / 19);
+  // the camera leans a little toward the chosen spot
+  $("#gcam").style.transform = `translate3d(${-(x - 960) * 0.035}px, ${-(y - 640) * 0.03 + 240 * d}px, 0) scale(${breath + zoom + (TVMODE ? 0 : 0.06 * ease(-d)) + boost}) rotate(${rot}deg)`;
+  const lx = x - (x - 960) * 0.035, ly = y - (y - 640) * 0.03;
+  drawShade(lx, ly);
+  document.querySelectorAll("#garden .lantern").forEach((el, k) => (el.style.opacity = (0.8 + 0.12 * Math.sin(t * (4.1 + k)) + 0.08 * Math.sin(t * (10.3 + k * 2))).toFixed(3)));
+  $("#pods").style.opacity = (0.65 + 0.35 * Math.sin(t * 0.9)).toFixed(3);
+  if (capShown !== spot) {                                     // the film's name, swapped while it's faded out
+    const c = $("#gcap"); c.classList.add("out"); const i = spot; capShown = spot;
+    setTimeout(() => { if (spot !== i) return; c.querySelector(".k").textContent = BEASTS[i].k; c.querySelector(".t").textContent = BEASTS[i].t; c.classList.remove("out"); }, capShown < 0 ? 0 : 180);
+  }
+  // fireflies everywhere; a swirl of motes where the beast is (every second frame on the TV)
+  dt = later("flies", dt); if (!dt) return;
+  gfx.clearRect(0, 0, 1920, 1080);
+  gfx.globalCompositeOperation = "lighter";
+  for (const f of flies) {
+    f.x += (f.vx + Math.sin(t * 0.7 + f.p) * 8) * dt; f.y += (f.vy + Math.cos(t * 0.5 + f.p) * 5) * dt;
+    if (f.x < 100) f.x = 1820; if (f.x > 1820) f.x = 100; if (f.y < 240) f.y = 900; if (f.y > 900) f.y = 240;
+    const b = Math.max(0, Math.sin(t * f.w * 2 + f.p)); gfx.globalAlpha = 0.15 + 0.75 * b * b;
+    gfx.drawImage(fireSpr, f.x - f.r * 4, f.y - f.r * 4, f.r * 8, f.r * 8);
+  }
+  for (const w of wisps) {
+    const a = w.a + t * w.w, rr = w.r * (0.8 + 0.2 * Math.sin(t * 1.3 + w.h * 6));
+    gfx.globalAlpha = 0.12 + 0.3 * (0.5 + 0.5 * Math.sin(t * 2 + w.h * 9));        // a faint shimmer of magic around the beast
+    const px = x + Math.cos(a) * rr * 1.6, py = y + Math.sin(a) * rr * 0.7 - Math.sin(t + w.h * 6) * 20;
+    gfx.drawImage(w.h > 0.5 ? starSpr : fireSpr, px - w.s * 3, py - w.s * 3, w.s * 6, w.s * 6);
+  }
+  gfx.globalAlpha = 1;
+}
+const dotSpr = sprite(16, 16, [[0, "rgba(255,220,150,1)"], [0.45, "rgba(255,214,150,.75)"], [1, "rgba(255,200,130,0)"]]);
+const fireSpr = sprite(32, 32, [[0, "rgba(255,250,200,1)"], [0.15, "rgba(220,255,150,.8)"], [0.4, "rgba(170,240,120,.18)"], [1, "rgba(150,230,100,0)"]]);
+
+// ================================================================ opening things (a stand-in for the real deep links)
+function curtain(title, sub, ms) {
+  $("#opening .t").textContent = title; $("#opening .s").textContent = sub;
+  $("#opening").style.opacity = 1;
+  setTimeout(() => ($("#opening").style.opacity = 0), ms);
+}
+// window.TV is the TV app's bridge (hogwarts-tv): launch(package or "input:<name>"), openFilm(link, package, title), search(title)
+const launch = (what, delay) => window.TV && setTimeout(() => TV.launch(what), delay);
+const NAMES = { "in.startv.hotstar": "JioHotstar", "com.netflix.ninja": "Netflix", "com.amazon.amazonvideo.livingroom": "Prime Video",
+                "com.google.android.youtube.tv": "YouTube", "com.apple.atve.androidtv.appletv": "Apple TV" };
+const serviceName = () => (settings.dock.find(e => e.pkg === settings.films) || {}).label || NAMES[settings.films] || "your app";
+const filmLink = id => ((DEFAULTS.links || {})[settings.films] || {})[id] || "";
+const bySearch = () => settings.films === "search" || !tvHas(settings.films);
+function openingText(id) { return bySearch() ? "Searching your TV…" : filmLink(id) ? `Opening on ${serviceName()}…` : `Opening ${serviceName()}…`; }
+function watch(id, title, delay) {
+  if (!window.TV) return;
+  setTimeout(() => (bySearch() ? TV.search(title, "") : TV.openFilm(filmLink(id), settings.films, title)), delay);
+}
+function filmsText() {                                        // the hints and the books' inside pages name where the films open
+  const where = bySearch() ? "find it on your TV" : "watch on " + serviceName();
+  $("#hint").innerHTML = `← → browse &nbsp;·&nbsp; OK ${esc(where)}`;
+  $("#ghint").innerHTML = `← → explore &nbsp;·&nbsp; OK ${esc(where)}`;
+  document.querySelectorAll("#row .now").forEach(el => (el.textContent = bySearch() ? "Find it on your TV" : "Now on " + serviceName()));
+}
+filmsText();
+function openApp() {
+  if (APPS[app].target === "customise") return openCustom();
+  curtain(APPS[app].n, "Opening…", 1600); launch(APPS[app].target, 450);
+}
+function openFilm() {
+  if (opening) return;
+  opening = true; openT = 0;
+  for (let k = 0; k < 120; k++) sp.push({ x: 978 + focusX + (Math.random() - .5) * 90, y: 530 + (Math.random() - .5) * 220, vx: (Math.random() - .5) * 520,
+                                          vy: (Math.random() - .7) * 450, life: 1 + Math.random() * .6, r: 0.8 + Math.random() * 2.4 });
+  const f = FILMS[Math.round(target)];
+  setTimeout(() => curtain(f.t, openingText(f.id), 2300), 1300);
+  watch(f.id, f.t, 2000);
+  setTimeout(() => { opening = false; openT = 0; }, 3600);
+}
+
+// ================================================================ the three sections, and the remote
+let section = /gh/.test(location.hash) ? 2 : /lib/.test(location.hash) ? 1 : 0;
+const page = spring(section, 26, 1);
+addEventListener("keydown", e => {
+  const k = e.key;
+  if (k.startsWith("Arrow") || k === "Enter") e.preventDefault();
+  if (custom.open) { customKey(k); e.preventDefault(); return; }
+  if (opening) return;
+  if (section === 0 && gearOn) {
+    if (k === "Enter" || k === " ") openCustom();
+    else if (k === "Escape" || k === "Backspace") setGear(false);
+    else if (k.startsWith("Arrow") && k !== "ArrowUp") setGear(false);
+    else return;
+  } else if (section === 0) {
+    if (k === "ArrowUp") setGear(true);
+    else if (k === "ArrowRight") focusApp(app + 1);
+    else if (k === "ArrowLeft") focusApp(app - 1);
+    else if (k === "ArrowDown") section = 1;
+    else if (k === "Enter" || k === " ") openApp();
+    else return;
+  } else if (section === 1) {
+    if (k === "ArrowRight") target = Math.min(FILMS.length - 1, Math.round(target) + 1);
+    else if (k === "ArrowLeft") target = Math.max(0, Math.round(target) - 1);
+    else if (k === "ArrowUp" || k === "Escape" || k === "Backspace") section = 0;
+    else if (k === "ArrowDown") section = 2;
+    else if (k === "Enter" || k === " ") openFilm();
+    else return;
+  } else {
+    if (k === "ArrowRight") focusSpot(spot + 1);
+    else if (k === "ArrowLeft") focusSpot(spot - 1);
+    else if (k === "ArrowUp" || k === "Escape" || k === "Backspace") section = 1;
+    else if (k === "Enter" || k === " ") { const b = BEASTS[spot]; curtain(b.full, openingText(b.id), 2300); watch(b.id, b.full, 700); }
+    else return;
+  }
+  e.preventDefault();
+});
+window.tvBack = () => {
+  if (custom.open) { closeCustom(); return true; }
+  if (gearOn) { setGear(false); return true; }
+  if (opening) return true; if (section > 0) { section--; return true; } return false;
+};
+window.tvHome = () => { if (custom.open) closeCustom(); setGear(false); section = 0; };                       // the remote's Home button, when this is the home screen
+// ================================================================ CUSTOMISE
+// Every app on the TV and every HDMI port, as tiles: OK picks one for the dock (numbered in order, six at most) or
+// drops it. Below, where the films open: an app with direct links in config.js, the TV's own search, or the search of
+// any app picked for the dock. Done (or Back) keeps the choices; Start again goes back to config.js.
+let gearOn = false;
+function setGear(on) { gearOn = on; $("#gear").classList.toggle("focus", on); $("#topIcons").classList.toggle("focus", on); }
+const custom = { open: false, tiles: [], pick: [], films: "", zone: 0, gi: 0, fi: 0, bi: 0, pills: [] };
+const COLS = 6;
+function tileKeyFor(e, tiles) {                               // a dock entry -> its tile (an "input:<name>" matches its port)
+  if (!e.pkg.startsWith("input:")) return tiles.some(t => t.key === e.pkg) ? e.pkg : null;
+  const t = tiles.find(t => t.input && inputMatch(e.pkg.slice(6), t.input));
+  return t ? t.key : null;
+}
+function openCustom() {
+  setGear(false);
+  const apps = tvApps(), inputs = tvInputs();
+  const tile = a => ({ key: a.pkg, label: a.label, pkg: a.pkg });
+  custom.tiles = apps.filter(a => a.media !== false).map(tile)
+    .concat(inputs.map(i => ({ key: "input:" + i.id, label: i.label.split(" · ")[0], sub: i.label, input: i })))
+    .concat(apps.filter(a => a.media === false).map(tile));
+  custom.pick = settings.dock.map(e => tileKeyFor(e, custom.tiles)).filter((k, i, a) => k && a.indexOf(k) === i).slice(0, 6);
+  custom.films = settings.films;
+  custom.zone = 0; custom.gi = 0; custom.fi = 0; custom.bi = 0; custom.scroll = 0;
+  const rows = $("#custom .rows");
+  rows.innerHTML = custom.tiles.map(t => `<div class="tile"><div class="t">${esc(t.input ? t.sub : t.label)}</div><div class="n"></div></div>`).join("");
+  custom.els = [...rows.children];
+  custom.open = true; $("#custom").classList.add("open");
+  for (const id of ["#home", "#library", "#garden"]) css($(id), "visibility", "hidden");
+  drawCustom();
+  // the apps' own banners or icons, a few at a time so the panel opens at once
+  let q = custom.tiles.map((t, i) => [t, i]).filter(([t]) => t.pkg && HAS_TV);
+  const more = () => {
+    if (!custom.open || !q.length) return;
+    q.splice(0, 4).forEach(([t, i]) => {
+      const u = TV.icon(t.pkg); if (!u) return;
+      const img = document.createElement("img"), banner = u.startsWith("banner:"); img.className = banner ? "" : "icon";
+      img.src = u.slice(u.indexOf(":") + 1); custom.els[i].prepend(img);
+      if (banner) custom.els[i].classList.add("banner");
+    });
+    setTimeout(more, 30);
+  };
+  more();
+}
+function filmChoices() {                                     // [value, label] for the films row
+  const out = [];
+  for (const pkg of Object.keys(DEFAULTS.links || {})) if (tvHas(pkg)) out.push([pkg, `${NAMES[pkg] || (custom.tiles.find(t => t.key === pkg) || {}).label || pkg} <i>· each film directly</i>`]);
+  out.push(["search", `Your TV's search <i>· any country</i>`]);
+  for (const key of custom.pick) {
+    const t = custom.tiles.find(t => t.key === key);
+    if (t && t.pkg && !out.some(o => o[0] === t.pkg)) out.push([t.pkg, `${esc(t.label)} <i>· its search</i>`]);
+  }
+  return out;
+}
+function drawCustom() {
+  custom.els.forEach((el, i) => {
+    const n = custom.pick.indexOf(custom.tiles[i].key);
+    el.classList.toggle("sel", n >= 0); el.querySelector(".n").textContent = n >= 0 ? n + 1 : "";
+    el.classList.toggle("foc", custom.zone === 0 && custom.gi === i);
+  });
+  const row = Math.floor(custom.gi / COLS);                   // three rows show; the grid scrolls to keep the focus in view
+  custom.scroll = clamp(custom.scroll || 0, row - 2, row);
+  $("#custom .rows").style.transform = `translateY(${-custom.scroll * 158}px)`;
+  custom.pills = filmChoices();
+  if (!custom.pills.some(p => p[0] === custom.films)) custom.films = custom.pills[0][0];
+  $("#custom .films").innerHTML = custom.pills.map(([v, l], i) =>
+    `<div class="pill${v === custom.films ? " sel" : ""}${custom.zone === 1 && custom.fi === i ? " foc" : ""}">${l}</div>`).join("");
+  document.querySelectorAll("#custom .btn").forEach((b, i) => b.classList.toggle("foc", custom.zone === 2 && custom.bi === i));
+}
+let noteTimer = 0;
+function note(t) { $("#custom .note").textContent = t; clearTimeout(noteTimer); noteTimer = setTimeout(() => ($("#custom .note").textContent = ""), 2200); }
+function customKey(k) {
+  const n = custom.tiles.length;
+  if (k === "Escape" || k === "Backspace") return closeCustom();
+  if (custom.zone === 0) {
+    if (k === "ArrowRight" && custom.gi + 1 < n && (custom.gi + 1) % COLS) custom.gi++;
+    else if (k === "ArrowLeft" && custom.gi % COLS) custom.gi--;
+    else if (k === "ArrowUp" && custom.gi >= COLS) custom.gi -= COLS;
+    else if (k === "ArrowDown") { if (custom.gi + COLS < n) custom.gi += COLS; else if (Math.floor(custom.gi / COLS) < Math.floor((n - 1) / COLS)) custom.gi = n - 1; else custom.zone = 1; }
+    else if (k === "Enter" || k === " ") {
+      const key = custom.tiles[custom.gi].key, at = custom.pick.indexOf(key);
+      if (at >= 0) custom.pick.splice(at, 1);
+      else if (custom.pick.length >= 6) note("The dock holds six. Drop one first.");
+      else custom.pick.push(key);
+    }
+  } else if (custom.zone === 1) {
+    if (k === "ArrowRight") custom.fi = Math.min(custom.pills.length - 1, custom.fi + 1);
+    else if (k === "ArrowLeft") custom.fi = Math.max(0, custom.fi - 1);
+    else if (k === "ArrowUp") custom.zone = 0;
+    else if (k === "ArrowDown") custom.zone = 2;
+    else if (k === "Enter" || k === " ") custom.films = custom.pills[custom.fi][0];
+  } else {
+    if (k === "ArrowRight") custom.bi = 1;
+    else if (k === "ArrowLeft") custom.bi = 0;
+    else if (k === "ArrowUp") custom.zone = 1;
+    else if (k === "Enter" || k === " ") {
+      if (custom.bi === 0) return closeCustom();
+      custom.pick = DEFAULTS.dock.map(e => tileKeyFor(e, custom.tiles)).filter(Boolean).slice(0, 6);
+      custom.films = DEFAULTS.films; note("Back to the starting dock.");
+    }
+  }
+  drawCustom();
+}
+function closeCustom() {
+  settings.dock = custom.pick.map(key => { const t = custom.tiles.find(t => t.key === key); return { pkg: key, label: t.label }; });
+  settings.films = custom.films;
+  saveSettings();
+  custom.open = false; $("#custom").classList.remove("open");
+  app = Math.min(app, settings.dock.length - 1);
+  buildDock(); resetOwl(); filmsText();
+}
+function resetOwl() {                                        // the dock changed under the owl: she starts on the focused app
+  Object.assign(owl, { at: app, to: app, hopping: false, landed: true, x: appX(app), y: perchY(app) });
+  glowX.x = appX(app); glowX.v = 0;
+}
+
+let wheelAt = 0;
+addEventListener("wheel", e => { const n = performance.now(); if (n - wheelAt < 600 || Math.abs(e.deltaY) < 8) return; wheelAt = n; section = clamp(section + Math.sign(e.deltaY), 0, 2); }, { passive: true });
+
+let last = performance.now(), perf = { n: 0, sum: 0, worst: 0, slow: 0, at: last };
+function frame(now) {
+  const ms = now - last, dt = Math.min(0.05, ms / 1000); last = now;
+  if (window.TV) {
+    perf.n++; perf.sum += ms; perf.worst = Math.max(perf.worst, ms); if (ms > 25) perf.slow++;
+    if (now - perf.at > 5000) {
+      console.log(`perf section=${section} fps=${(1000 * perf.n / perf.sum).toFixed(1)} worst=${perf.worst.toFixed(0)}ms slow=${perf.slow}/${perf.n}`);
+      perf = { n: 0, sum: 0, worst: 0, slow: 0, at: now };
+    }
+  }
+  const t = now / 1000;
+  if (warm > 0 || custom.open) return requestAnimationFrame(frame);       // still decoding, or the Customise panel covers it all                  // the pictures are still decoding
+  let pg;
+  if (warmPlan.length) { [pg, boost] = warmPlan.shift(); page.x = pg; page.v = 0; if (!warmPlan.length) liftCurtain(); }   // visiting each section
+  else { boost = 0; pg = hash("pg") ? (page.x = +hash("pg")) : clamp(step(page, section, dt), 0, 2); }
+  owlWarm = warmPlan.length > 4 && pg === 0;
+  everyOther = !TVMODE || (++tick & 1) === 0;
+  scrolling = Math.abs(pg - section) > 0.02;
+  css($("#home"), "visibility", pg < 1.999 ? "visible" : "hidden");
+  css($("#library"), "visibility", "visible");
+  css($("#garden"), "visibility", pg > 0.001 ? "visible" : "hidden");
+  if (pg < 0.999) home(t, dt, pg); else css($("#home"), "transform", "translate3d(0,-1080px,0)");
+  if (pg > 0.001 && pg < 1.999) library(t, dt, now, pg); else css($("#library"), "transform", `translate3d(0,${pg < 1 ? 1080 : -1080}px,0)`);
+  if (pg > 1.001) garden(t, dt, pg); else css($("#garden"), "transform", "translate3d(0,1080px,0)");
+  requestAnimationFrame(frame);
+}
+// fit the 1920 x 1080 stage to the window. The TV uses CSS zoom, not a scale transform: under a transform its WebView keeps
+// every moving layer rendered at full 2x density (four times the pixels), runs out of graphics memory and drops to ~8 fps.
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  if (TVMODE) $("#stage").style.zoom = s; else $("#stage").style.transform = `scale(${s})`;
+}
+addEventListener("resize", fit); fit();
+// Start-up on the TV: behind a (nearly) black curtain, wait for the pictures to decode, then show each section in turn for a
+// few frames (library, greenhouse, home) so the TV has drawn every one of them before you first scroll to it. Shown all at
+// once they'd hide each other and only the top one would get drawn. (On the TV the cameras don't push in while scrolling
+// between sections: the TV re-renders a layer the first time it's shown bigger, a visible hitch, and rendering every scene
+// bigger up front doesn't fit in its graphics memory. `boost` can add extra push-in to a warm-up step; it's 0 for now.)
+let warm = 0, warmPlan = [], boost = 0, owlWarm = false;
+const hold = (pg, b, n) => Array.from({ length: n }, () => [pg, b]);
+function liftCurtain() { const cur = $("#opening"); cur.style.transition = "opacity .6s"; cur.style.opacity = 0; if (firstRun) setTimeout(openCustom, 900); }
+if (TVMODE) {
+  const cur = $("#opening");
+  cur.style.transition = "none"; cur.style.opacity = 0.995;           // not quite opaque, so the scenes behind it still get drawn
+  warm = 1;
+  const pics = [...document.images, ...Object.values(SHEET).map(s => s.img)].map(im => im.decode().catch(() => {}));
+  Promise.race([Promise.all(pics), new Promise(r => setTimeout(r, 4000))]).then(() => {
+    warmPlan = [...hold(1, 0, 12), ...hold(2, 0, 12), ...hold(0, 0, 8), ...hold(section, 0, 8)];
+    warm = 0;
+  });
+}
+if (!TVMODE && firstRun) setTimeout(openCustom, 600);             // in a browser there's no warm-up curtain
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'app.tvhome.hogwarts'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'app.tvhome.hogwarts'
+        minSdk 24          // developed on an Android 10 TV
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // Release signing: your own key, described by release/keystore.properties (storeFile, storePassword, keyAlias,
+    // keyPassword). Without it the release build is signed with the debug key. Never commit the key.
+    def keyProps = new Properties()
+    def keyFile = rootProject.file('release/keystore.properties')
+    if (keyFile.exists()) keyFile.withInputStream { keyProps.load(it) }
+    signingConfigs {
+        release {
+            if (keyFile.exists()) {
+                storeFile rootProject.file(keyProps['storeFile'])          // a path relative to the project
+                storePassword keyProps['storePassword']
+                keyAlias keyProps['keyAlias']
+                keyPassword keyProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        // For testing: listed with the TV's apps; the home entry stays off.
+        debug {
+            minifyEnabled false
+            manifestPlaceholders = [testOnly: 'true', homeEntry: 'false']
+        }
+        // The shareable APK: an ordinary app, offered to the system as a home screen.
+        release {
+            minifyEnabled false
+            signingConfig keyFile.exists() ? signingConfigs.release : signingConfigs.debug
+            manifestPlaceholders = [testOnly: 'false', homeEntry: 'true']
+        }
+    }
+
+    // the page itself (src/main/assets/www) is copied in from hogwarts/ by hogwarts/tools/tv_assets.py (build.sh runs it)
+    androidResources {
+        noCompress += ['jpg', 'png', 'webp']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+}
