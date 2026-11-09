@@ -343,6 +343,9 @@ const LOGOS = {
   "playstation":                       { f: "ps5",        w: 101, dh: 79,  perch: 0.032 },      // an HDMI port with a PlayStation on it
   "com.google.android.youtube.tv":     { f: "youtube",    w: 86,  dh: 61,  perch: 0.026 },
   "com.apple.atve.androidtv.appletv":  { f: "appletv",    h: 87,  dh: 87,  perch: 0.062 },
+  "com.baghdady.live":                 { f: "baghdadylive", h: 92, dh: 92, perch: 0.02 },       // the hexagon, its play arrow cut out
+  "com.mbm_soft.darpromax":            { f: "darpromax",  w: 190, dh: 50,  perch: 0.05 },
+  "net.mbc.shahidTV":                  { f: "shahid",     h: 92,  dh: 92,  perch: 0.02 },       // the owl sits on the middle dot
 };
 const logoFor = e => LOGOS[e.pkg] || (e.pkg.startsWith("input:") && /playstation|\bps[345]\b/i.test(e.pkg + " " + e.label) ? LOGOS.playstation : null);
 const CELL = 292;
@@ -795,7 +798,7 @@ function curtain(title, sub, ms) {
 }
 // window.TV is the TV app's bridge (hogwarts-tv): launch(package or "input:<name>"), openFilm(link, package, title), search(title)
 const launch = (what, delay) => window.TV && setTimeout(() => TV.launch(what), delay);
-const NAMES = { "in.startv.hotstar": "JioHotstar", "com.netflix.ninja": "Netflix", "com.amazon.amazonvideo.livingroom": "Prime Video",
+const NAMES = { "in.startv.hotstar": "JioHotstar", "com.netflix.ninja": "Netflix", "com.amazon.amazonvideo.livingroom": "Prime Video", "com.baghdady.live": "BaghdadyLive",
                 "com.google.android.youtube.tv": "YouTube", "com.apple.atve.androidtv.appletv": "Apple TV" };
 const serviceName = () => (settings.dock.find(e => e.pkg === settings.films) || {}).label || NAMES[settings.films] || "your app";
 const filmLink = id => ((DEFAULTS.links || {})[settings.films] || {})[id] || "";

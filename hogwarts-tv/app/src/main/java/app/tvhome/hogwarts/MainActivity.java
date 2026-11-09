@@ -37,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -121,12 +122,14 @@ public class MainActivity extends Activity {
         /** Open a dock entry: an app's package, or "input:<name>" for an HDMI port. */
         @JavascriptInterface public void launch(String target) { runOnUiThread(() -> open(target)); }
 
-        /** A film: its link in that app if there is one, else that app's search, else the TV's search. */
+        /** A film: its link in that app if there is one, else that app's search, else the TV's search.
+         *  The link is a web link, or an "intent:" URI for apps that take their own extras (it only ever goes to pkg). */
         @JavascriptInterface public void openFilm(String url, String pkg, String title) {
             runOnUiThread(() -> {
                 boolean isLink = url != null && (url.startsWith("https://") || url.startsWith("http://"));
                 if (pkg == null || pkg.isEmpty() || "search".equals(pkg) || !installed(pkg)) { search(title, null); return; }
                 if (isLink && start(new Intent(Intent.ACTION_VIEW, Uri.parse(url)).setPackage(pkg))) return;
+                if (url != null && url.startsWith("intent:") && startIntentUri(url, pkg)) return;
                 search(title, pkg);
             });
         }
@@ -282,6 +285,19 @@ public class MainActivity extends Activity {
         if (start(new Intent("android.search.action.GLOBAL_SEARCH").putExtra(SearchManager.QUERY, query))) return;
         if (start(new Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, query))) return;
         Toast.makeText(this, "This TV has no search to open", Toast.LENGTH_SHORT).show();
+    }
+
+    /** An "intent:#Intent;...;end" link, held to the one app it was written for. */
+    private boolean startIntentUri(String uri, String pkg) {
+        try {
+            Intent i = Intent.parseUri(uri, Intent.URI_INTENT_SCHEME);
+            i.setSelector(null);
+            if (i.getComponent() != null && !pkg.equals(i.getComponent().getPackageName())) return false;
+            i.setPackage(pkg);
+            return start(i);
+        } catch (URISyntaxException e) {
+            return false;
+        }
     }
 
     private boolean start(Intent i) {
