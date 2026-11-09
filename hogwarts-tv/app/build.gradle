@@ -10,8 +10,8 @@ android {
         applicationId 'app.tvhome.hogwarts'
         minSdk 24          // developed on an Android 10 TV
         targetSdk 35
-        versionCode 1
-        versionName '1.0'
+        versionCode 2
+        versionName '1.1-baghdady'
     }
 
     // Release signing: your own key, described by release/keystore.properties (storeFile, storePassword, keyAlias,
