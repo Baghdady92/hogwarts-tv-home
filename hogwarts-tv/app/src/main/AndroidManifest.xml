@@ -13,6 +13,11 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- the TV's own home screen, for Exit (top right) -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
     </queries>
 
     <!-- Debug builds are testOnly and keep the HOME entry off, so they never compete with your launcher while you test. -->

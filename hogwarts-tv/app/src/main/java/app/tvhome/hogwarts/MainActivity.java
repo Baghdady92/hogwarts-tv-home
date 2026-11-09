@@ -19,6 +19,7 @@ import android.media.tv.TvInputManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -133,6 +134,17 @@ public class MainActivity extends Activity {
                 search(title, pkg);
             });
         }
+
+        /** The TV's own settings: "wifi" for its network settings (falling back to the main settings). */
+        @JavascriptInterface public void settings(String what) {
+            runOnUiThread(() -> {
+                if ("wifi".equals(what) && (start(new Intent(Settings.ACTION_WIFI_SETTINGS)) || start(new Intent(Settings.ACTION_WIRELESS_SETTINGS)))) return;
+                if (!start(new Intent(Settings.ACTION_SETTINGS))) Toast.makeText(MainActivity.this, "Couldn't open the settings", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        /** Leave the castle for the TV's own home screen (its stock launcher). */
+        @JavascriptInterface public void exitHome() { runOnUiThread(MainActivity.this::exitHome); }
 
         /** Search the TV for a title (or search inside one app, when pkg is given). */
         @JavascriptInterface public void search(String query, String pkg) { runOnUiThread(() -> MainActivity.this.search(query, pkg)); }
@@ -285,6 +297,22 @@ public class MainActivity extends Activity {
         if (start(new Intent("android.search.action.GLOBAL_SEARCH").putExtra(SearchManager.QUERY, query))) return;
         if (start(new Intent(Intent.ACTION_WEB_SEARCH).putExtra(SearchManager.QUERY, query))) return;
         Toast.makeText(this, "This TV has no search to open", Toast.LENGTH_SHORT).show();
+    }
+
+    /** The other home screens on the TV, best first: the highest priority one that isn't a setup or recovery screen. */
+    private void exitHome() {
+        PackageManager pm = getPackageManager();
+        Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+        List<ResolveInfo> others = new ArrayList<>();
+        for (ResolveInfo r : pm.queryIntentActivities(home, 0)) {
+            String name = (r.activityInfo.packageName + "/" + r.activityInfo.name).toLowerCase(Locale.ROOT);
+            if (r.activityInfo.packageName.equals(getPackageName()) || name.contains("setup") || name.contains("recovery")) continue;
+            others.add(r);
+        }
+        others.sort((a, b) -> Integer.compare(b.priority, a.priority));
+        for (ResolveInfo r : others)
+            if (start(new Intent(home).setClassName(r.activityInfo.packageName, r.activityInfo.name))) return;
+        Toast.makeText(this, "This TV has no other home screen", Toast.LENGTH_SHORT).show();
     }
 
     /** An "intent:#Intent;...;end" link, held to the one app it was written for. */
